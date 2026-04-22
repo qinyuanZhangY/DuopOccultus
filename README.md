@@ -31,8 +31,8 @@ npm start
 
 启动后访问：
 
-- 学习端：`http://localhost:3000/app`
-- 管理后台：`http://localhost:3000/admin`
+- 学习端：`http://localhost:3000/app`（手机尺寸适配）
+- 管理后台：`http://localhost:3000/admin`（桌面网页布局）
 - 入口页：`http://localhost:3000/`
 
 ## 课程管理说明
