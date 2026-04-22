@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <title>DuopOccultus 学习端</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body>
+    <main class="phone-shell">
+      <header class="topbar">
+        <div>
+          <h1>DuopOccultus</h1>
+          <p class="muted">神秘学娱乐学习</p>
+        </div>
+        <button id="logoutBtn" class="secondary-btn small-btn hidden">退出</button>
+      </header>
+
+      <section id="authView" class="card">
+        <h2>登录 / 注册</h2>
+        <p class="muted">支持用户名密码登录。示例账号：demo / demo123</p>
+        <form id="authForm" class="stack-form">
+          <input id="usernameInput" type="text" placeholder="用户名（3-20字符）" required />
+          <input id="passwordInput" type="password" placeholder="密码（至少6位）" required />
+          <div class="button-row">
+            <button type="submit" class="primary-btn">登录</button>
+            <button type="button" id="registerBtn" class="secondary-btn">注册</button>
+          </div>
+        </form>
+        <p id="authMessage" class="message"></p>
+      </section>
+
+      <section id="dashboardView" class="hidden stack">
+        <article class="card">
+          <div class="row-between">
+            <h2 id="welcomeTitle">欢迎</h2>
+            <span class="xp-pill">XP: <strong id="xpValue">0</strong></span>
+          </div>
+          <p id="disclaimerText" class="disclaimer"></p>
+        </article>
+
+        <article class="card">
+          <h3>技能树关卡</h3>
+          <div id="skillTree" class="skill-tree"></div>
+        </article>
+      </section>
+
+      <section id="lessonView" class="hidden stack">
+        <article class="card">
+          <button id="backToDashboardBtn" class="secondary-btn small-btn">返回技能树</button>
+          <h2 id="lessonTitle"></h2>
+          <p id="lessonMeta" class="muted"></p>
+          <div id="coverPlaceholder" class="cover-placeholder"></div>
+        </article>
+
+        <article class="card">
+          <h3>概念课</h3>
+          <div id="conceptContent" class="concept-content"></div>
+          <button id="startQuizBtn" class="primary-btn">开始 8 题挑战</button>
+        </article>
+      </section>
+
+      <section id="quizView" class="hidden stack">
+        <article class="card">
+          <div class="row-between">
+            <h3 id="quizProgress"></h3>
+            <span id="quizTypeTag" class="type-tag"></span>
+          </div>
+          <p id="quizPrompt" class="question-prompt"></p>
+          <div id="quizBody"></div>
+          <div class="button-row">
+            <button id="prevQuestionBtn" class="secondary-btn">上一题</button>
+            <button id="nextQuestionBtn" class="primary-btn">下一题</button>
+            <button id="submitQuizBtn" class="primary-btn hidden">提交</button>
+          </div>
+        </article>
+      </section>
+
+      <section id="resultView" class="hidden">
+        <article class="card">
+          <h3>本章完成</h3>
+          <p id="resultScore"></p>
+          <p id="resultXp"></p>
+          <button id="resultBackBtn" class="primary-btn">返回技能树</button>
+        </article>
+      </section>
+    </main>
+    <script src="/js/api.js"></script>
+    <script src="/js/app.js"></script>
+  </body>
+</html>

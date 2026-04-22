@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <title>DuopOccultus 管理后台</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body>
+    <main class="phone-shell">
+      <section class="screen active" data-screen="login">
+        <header>
+          <h1>管理后台</h1>
+          <p class="muted">先用管理员账号登录：admin / admin123</p>
+        </header>
+        <form id="admin-login-form" class="card">
+          <label>
+            用户名
+            <input type="text" name="username" value="admin" required />
+          </label>
+          <label>
+            密码
+            <input type="password" name="password" value="admin123" required />
+          </label>
+          <button type="submit" class="primary-btn block-btn">登录后台</button>
+          <p id="admin-login-error" class="error-text"></p>
+        </form>
+      </section>
+
+      <section class="screen" data-screen="dashboard">
+        <header class="top-bar">
+          <div>
+            <h2>课程管理</h2>
+            <p class="muted">新增 / 编辑 / 删除课程（每课 8 题）</p>
+          </div>
+          <button id="admin-logout-btn" class="ghost-btn">退出</button>
+        </header>
+        <section class="card">
+          <h3>现有课程</h3>
+          <ul id="admin-lesson-list" class="list"></ul>
+        </section>
+        <section class="card">
+          <h3 id="editor-title">新增课程</h3>
+          <form id="lesson-editor-form">
+            <input type="hidden" name="lessonId" />
+            <label>
+              模块
+              <select name="skillId" required></select>
+            </label>
+            <label>
+              级别
+              <select name="level" required>
+                <option value="beginner">beginner</option>
+                <option value="advanced">advanced</option>
+              </select>
+            </label>
+            <label>
+              标题
+              <input type="text" name="title" required />
+            </label>
+            <label>
+              时长（5-8）
+              <input type="number" name="estimatedMinutes" min="5" max="8" value="6" required />
+            </label>
+            <label>
+              概念课（每行一段）
+              <textarea name="conceptLines" rows="4" required></textarea>
+            </label>
+            <label>
+              题目 JSON（必须 8 题）
+              <textarea name="questionsJson" rows="10" required></textarea>
+            </label>
+            <div class="action-row">
+              <button type="submit" class="primary-btn">保存课程</button>
+              <button id="reset-editor-btn" type="button" class="secondary-btn">清空</button>
+            </div>
+            <p id="editor-error" class="error-text"></p>
+            <p id="editor-success" class="success-text"></p>
+          </form>
+        </section>
+      </section>
+    </main>
+    <script src="/js/api.js"></script>
+    <script src="/js/admin.js"></script>
+  </body>
+</html>
