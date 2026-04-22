@@ -283,6 +283,23 @@ p {
     );
 }
 
+.point-image {
+  width: 100%;
+  margin-top: 10px;
+  border-radius: 2px;
+  border: 1px solid var(--line);
+  display: block;
+}
+
+.point-image-preview {
+  width: 100%;
+  max-height: 180px;
+  object-fit: cover;
+  margin-top: 8px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+}
+
 .concept-content {
   display: grid;
   gap: 8px;
@@ -516,6 +533,25 @@ label {
   margin: 0;
   display: grid;
   gap: 8px;
+}
+
+.list-group {
+  border: 1px solid var(--line-soft);
+  border-radius: 2px;
+  background: rgba(52, 49, 2, 0.3);
+}
+
+.course-list-header {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line-soft);
+  font-weight: 700;
+  color: var(--gold);
+}
+
+.course-list-body {
+  display: grid;
+  gap: 8px;
+  padding: 8px;
 }
 
 .list-item {

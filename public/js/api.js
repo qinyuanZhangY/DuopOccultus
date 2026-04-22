@@ -1,10 +1,12 @@
 async function request(url, options = {}) {
+  const headers = { ...(options.headers || {}) };
+  if (options.body !== undefined && !headers["Content-Type"]) {
+    headers["Content-Type"] = "application/json";
+  }
+
   const response = await fetch(url, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    },
     ...options,
+    headers,
   });
 
   let data = null;
@@ -15,8 +17,7 @@ async function request(url, options = {}) {
   }
 
   if (!response.ok) {
-    const message = data?.error || "请求失败";
-    throw new Error(message);
+    throw new Error(data?.error || "请求失败");
   }
 
   return data;
@@ -42,17 +43,8 @@ window.Api = {
     return request("/api/auth/logout", { method: "POST" });
   },
 
-  learnHome() {
-    return request("/api/progress");
-  },
   progress() {
     return request("/api/progress");
-  },
-  resumeCourse(courseId) {
-    return request("/api/progress/course", {
-      method: "PUT",
-      body: JSON.stringify({ courseId }),
-    });
   },
   setCurrentCourse(courseId) {
     return request("/api/progress/course", {
@@ -60,17 +52,8 @@ window.Api = {
       body: JSON.stringify({ courseId }),
     });
   },
-  learnPoint(_courseId, pointId) {
-    return request(`/api/path-points/${pointId}`);
-  },
   getPoint(pointId) {
     return request(`/api/path-points/${pointId}`);
-  },
-  answerQuestion(pointId, questionId, response) {
-    return request(`/api/path-points/${pointId}/questions/${questionId}/submit`, {
-      method: "POST",
-      body: JSON.stringify({ response }),
-    });
   },
   submitQuestion(pointId, questionId, response) {
     return request(`/api/path-points/${pointId}/questions/${questionId}/submit`, {
@@ -88,20 +71,20 @@ window.Api = {
   adminData() {
     return request("/api/admin/data");
   },
-  createNode(payload) {
+  createPoint(payload) {
     return request("/api/admin/points", {
       method: "POST",
       body: JSON.stringify(payload),
     });
   },
-  updateNode(nodeId, payload) {
-    return request(`/api/admin/points/${nodeId}`, {
+  updatePoint(pointId, payload) {
+    return request(`/api/admin/points/${pointId}`, {
       method: "PUT",
       body: JSON.stringify(payload),
     });
   },
-  deleteNode(nodeId) {
-    return request(`/api/admin/points/${nodeId}`, {
+  deletePoint(pointId) {
+    return request(`/api/admin/points/${pointId}`, {
       method: "DELETE",
     });
   },

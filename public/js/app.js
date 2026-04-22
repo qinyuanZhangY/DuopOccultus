@@ -6,7 +6,6 @@ const state = {
   activePoint: null,
   currentQuestionIndex: 0,
   responses: {},
-  completionResult: null,
 };
 
 const views = {
@@ -82,13 +81,11 @@ function formatCorrectAnswer(result) {
   if (!result || result.correctAnswer == null) {
     return "";
   }
-
   if (result.questionType === "drag_match" && typeof result.correctAnswer === "object") {
     return Object.entries(result.correctAnswer)
       .map(([left, right]) => `${left} -> ${right}`)
       .join("；");
   }
-
   return String(result.correctAnswer);
 }
 
@@ -184,17 +181,14 @@ function renderPointContent() {
   if (!state.activePoint) {
     return;
   }
-  const chapterLines = Array.isArray(state.activePoint.chapterText)
-    ? state.activePoint.chapterText
-    : Array.isArray(state.activePoint.textContent)
-      ? state.activePoint.textContent
-      : [];
-  const readingMinutes =
-    state.activePoint.readingMinutes ?? state.activePoint.textDurationMinutes ?? 4;
   pointTitle.textContent = state.activePoint.title;
-  pointMeta.textContent = `路径点 ${state.activePoint.order} · 文本约 ${readingMinutes} 分钟`;
-  pointCover.textContent = `蓝底文字占位图：${state.activePoint.title}`;
-  pointConcept.innerHTML = chapterLines.map((line) => `<p>${line}</p>`).join("");
+  pointMeta.textContent = `路径点 ${state.activePoint.order} · 文本约 ${state.activePoint.readingMinutes} 分钟`;
+  if (state.activePoint.imageDataUrl) {
+    pointCover.innerHTML = `<img src="${state.activePoint.imageDataUrl}" alt="${state.activePoint.title}" class="point-image" />`;
+  } else {
+    pointCover.textContent = `蓝底文字占位图：${state.activePoint.title}`;
+  }
+  pointConcept.innerHTML = state.activePoint.chapterText.map((line) => `<p>${line}</p>`).join("");
 }
 
 function buildOptions(question, selectedValue) {
@@ -337,7 +331,6 @@ async function submitCurrentAnswer() {
   }
 
   const completed = await window.Api.completePoint(state.activePoint.id, state.responses);
-  state.completionResult = completed;
   finishText.textContent = completed.finishedCourse
     ? "本课程路径已完成，太棒了！"
     : "本路径点已完成，已解锁下一路径点。";

@@ -14,8 +14,8 @@ const QUESTION_TYPES = new Set([
   "flip_card",
 ]);
 
-app.use(express.json({ limit: "1mb" }));
-app.use(express.urlencoded({ extended: false }));
+app.use(express.json({ limit: "15mb" }));
+app.use(express.urlencoded({ extended: false, limit: "15mb" }));
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "duop-occultus-dev-secret",
@@ -59,6 +59,18 @@ function requireAdmin(req, res, next) {
 
 function normalizeString(value) {
   return String(value || "").trim();
+}
+
+function normalizeOptionalString(value) {
+  const text = String(value || "").trim();
+  return text || null;
+}
+
+function isValidImageDataUrl(value) {
+  if (!value) {
+    return true;
+  }
+  return /^data:image\/(png|jpe?g|webp|gif);base64,[a-z0-9+/=\s]+$/i.test(value);
 }
 
 function validateQuestion(question, index) {
@@ -138,6 +150,7 @@ function normalizePointPayload(payload) {
   const chapterText = Array.isArray(payload.readingLines)
     ? payload.readingLines.map(normalizeString).filter(Boolean)
     : [];
+  const imageDataUrl = normalizeOptionalString(payload.imageDataUrl);
   const questions = Array.isArray(payload.questions) ? payload.questions : [];
 
   if (!courseId) {
@@ -158,6 +171,9 @@ function normalizePointPayload(payload) {
   if (chapterText.length < 2) {
     return { error: "学习文本至少 2 段" };
   }
+  if (!isValidImageDataUrl(imageDataUrl)) {
+    return { error: "图片格式仅支持 data:image/*;base64" };
+  }
   if (questions.length !== 8) {
     return { error: "每个路径点必须配置 8 道题" };
   }
@@ -177,6 +193,7 @@ function normalizePointPayload(payload) {
       readingMinutes,
       estimatedMinutes,
       chapterText,
+      imageDataUrl,
       questions,
     },
   };
@@ -290,6 +307,7 @@ app.get("/api/path-points/:pointId", requireAuth, async (req, res) => {
       estimatedMinutes: publicPoint.estimatedMinutes,
       textDurationMinutes: publicPoint.readingMinutes,
       textContent: publicPoint.chapterText,
+      imageDataUrl: publicPoint.imageDataUrl,
       questions: publicPoint.questions,
     },
     status: {

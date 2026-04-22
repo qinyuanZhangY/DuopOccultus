@@ -2,7 +2,8 @@ const state = {
   user: null,
   courses: [],
   pathPoints: [],
-  editingPathPointId: null,
+  editingPointId: null,
+  imageDataUrl: "",
 };
 
 const screens = {
@@ -20,6 +21,8 @@ const editorTitle = document.querySelector("#editor-title");
 const resetEditorBtn = document.querySelector("#reset-editor-btn");
 const editorError = document.querySelector("#editor-error");
 const editorSuccess = document.querySelector("#editor-success");
+const imageInput = document.querySelector("#pointImageInput");
+const imagePreview = document.querySelector("#pointImagePreview");
 
 function showScreen(name) {
   Object.entries(screens).forEach(([key, element]) => {
@@ -104,16 +107,26 @@ function renderCourseOptions() {
     .join("");
 }
 
-function setEditorPath(point = null) {
-  const pathIdInput = pathEditorForm.querySelector('input[name="pathId"]');
+function updateImagePreview() {
+  if (!state.imageDataUrl) {
+    imagePreview.classList.add("hidden");
+    imagePreview.src = "";
+    return;
+  }
+  imagePreview.classList.remove("hidden");
+  imagePreview.src = state.imageDataUrl;
+}
+
+function setEditorPoint(point = null) {
+  const pointIdInput = pathEditorForm.querySelector('input[name="pathId"]');
   const courseSelect = pathEditorForm.querySelector('select[name="courseId"]');
   const orderInput = pathEditorForm.querySelector('input[name="order"]');
   const titleInput = pathEditorForm.querySelector('input[name="title"]');
   const readingInput = pathEditorForm.querySelector('textarea[name="readingLines"]');
   const questionsInput = pathEditorForm.querySelector('textarea[name="questionsJson"]');
 
-  state.editingPathPointId = point ? point.id : null;
-  pathIdInput.value = point ? point.id : "";
+  state.editingPointId = point ? point.id : null;
+  pointIdInput.value = point ? point.id : "";
   editorTitle.textContent = point ? "编辑路径点" : "新增路径点";
   courseSelect.value = point ? point.courseId : state.courses[0]?.id || "";
   orderInput.value = String(point ? point.order : 1);
@@ -122,9 +135,12 @@ function setEditorPath(point = null) {
   questionsInput.value = point
     ? JSON.stringify(point.questions, null, 2)
     : defaultQuestionTemplate();
+  state.imageDataUrl = point?.imageDataUrl || "";
+  imageInput.value = "";
+  updateImagePreview();
 
   setEditorMessage({
-    success: "路径点需满足：阅读文本 3~5 分钟 + 8 道题。",
+    success: "节点需满足：阅读文本 3~5 分钟 + 8 道题；可选上传 1 张图片。",
   });
 }
 
@@ -182,7 +198,7 @@ async function ensureAdminSession() {
     await loadAdminData();
     renderCourseOptions();
     renderCourseList();
-    setEditorPath();
+    setEditorPoint();
     showScreen("dashboard");
   } catch (_error) {
     showScreen("login");
@@ -206,14 +222,23 @@ async function handleLogin(event) {
     await loadAdminData();
     renderCourseOptions();
     renderCourseList();
-    setEditorPath();
+    setEditorPoint();
     showScreen("dashboard");
   } catch (error) {
     showLoginError(error.message);
   }
 }
 
-async function handleSavePath(event) {
+function readImageAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(new Error("图片读取失败"));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function handleSavePoint(event) {
   event.preventDefault();
   setEditorMessage({});
   const formData = new FormData(pathEditorForm);
@@ -241,12 +266,13 @@ async function handleSavePath(event) {
     readingMinutes: 4,
     estimatedMinutes: 8,
     readingLines,
+    imageDataUrl: state.imageDataUrl || null,
     questions,
   };
 
   try {
-    if (state.editingPathPointId) {
-      await window.Api.updatePoint(state.editingPathPointId, payload);
+    if (state.editingPointId) {
+      await window.Api.updatePoint(state.editingPointId, payload);
       setEditorMessage({ success: "路径点已更新" });
     } else {
       await window.Api.createPoint(payload);
@@ -254,42 +280,68 @@ async function handleSavePath(event) {
     }
     await loadAdminData();
     renderCourseList();
-    setEditorPath();
+    setEditorPoint();
   } catch (error) {
     setEditorMessage({ error: error.message });
   }
 }
 
-async function handleDeletePath(id) {
+async function handleDeletePoint(id) {
   try {
     await window.Api.deletePoint(id);
     setEditorMessage({ success: "路径点已删除" });
     await loadAdminData();
     renderCourseList();
-    setEditorPath();
+    setEditorPoint();
   } catch (error) {
     setEditorMessage({ error: error.message });
   }
 }
+
+imageInput.addEventListener("change", async () => {
+  const [file] = imageInput.files || [];
+  if (!file) {
+    state.imageDataUrl = "";
+    updateImagePreview();
+    return;
+  }
+  if (!file.type.startsWith("image/")) {
+    setEditorMessage({ error: "请上传图片文件" });
+    imageInput.value = "";
+    return;
+  }
+  if (file.size > 2 * 1024 * 1024) {
+    setEditorMessage({ error: "图片大小不能超过 2MB" });
+    imageInput.value = "";
+    return;
+  }
+  try {
+    state.imageDataUrl = await readImageAsDataUrl(file);
+    updateImagePreview();
+    setEditorMessage({ success: "图片已加载，保存后生效。" });
+  } catch (error) {
+    setEditorMessage({ error: error.message });
+  }
+});
 
 adminCourseList.addEventListener("click", (event) => {
   const editBtn = event.target.closest(".edit-btn");
   if (editBtn) {
     const point = state.pathPoints.find((item) => item.id === editBtn.dataset.id);
     if (point) {
-      setEditorPath(point);
+      setEditorPoint(point);
     }
     return;
   }
   const deleteBtn = event.target.closest(".delete-btn");
   if (deleteBtn) {
-    handleDeletePath(deleteBtn.dataset.id);
+    handleDeletePoint(deleteBtn.dataset.id);
   }
 });
 
 adminLoginForm.addEventListener("submit", handleLogin);
-pathEditorForm.addEventListener("submit", handleSavePath);
-resetEditorBtn.addEventListener("click", () => setEditorPath());
+pathEditorForm.addEventListener("submit", handleSavePoint);
+resetEditorBtn.addEventListener("click", () => setEditorPoint());
 adminLogoutBtn.addEventListener("click", async () => {
   await window.Api.logout();
   showScreen("login");

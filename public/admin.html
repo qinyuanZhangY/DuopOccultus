@@ -62,6 +62,13 @@
                   <textarea name="readingLines" rows="6" required></textarea>
                 </label>
                 <label class="full-row">
+                  节点图片（可选）
+                  <input id="pointImageInput" type="file" name="pointImage" accept="image/*" />
+                </label>
+                <div class="full-row image-preview-wrap">
+                  <img id="pointImagePreview" class="point-image-preview hidden" alt="节点图片预览" />
+                </div>
+                <label class="full-row">
                   题目 JSON（必须 8 题）
                   <textarea name="questionsJson" rows="12" required></textarea>
                 </label>
