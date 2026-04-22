@@ -1,18 +1,21 @@
 const state = {
   user: null,
-  skills: [],
   disclaimer: "",
-  currentLesson: null,
-  questionIndex: 0,
+  courses: [],
+  selectedCourseId: null,
+  activePoint: null,
+  currentQuestionIndex: 0,
   responses: {},
+  completionResult: null,
 };
 
 const views = {
   auth: document.querySelector("#authView"),
-  dashboard: document.querySelector("#dashboardView"),
-  lesson: document.querySelector("#lessonView"),
+  course: document.querySelector("#courseView"),
+  path: document.querySelector("#pathView"),
+  content: document.querySelector("#contentView"),
   quiz: document.querySelector("#quizView"),
-  result: document.querySelector("#resultView"),
+  finish: document.querySelector("#finishView"),
 };
 
 const authForm = document.querySelector("#authForm");
@@ -25,36 +28,43 @@ const logoutBtn = document.querySelector("#logoutBtn");
 const welcomeTitle = document.querySelector("#welcomeTitle");
 const xpValue = document.querySelector("#xpValue");
 const disclaimerText = document.querySelector("#disclaimerText");
-const skillTree = document.querySelector("#skillTree");
+const courseTabs = document.querySelector("#courseTabs");
+const resumeHint = document.querySelector("#resumeHint");
 
-const backToDashboardBtn = document.querySelector("#backToDashboardBtn");
-const lessonTitle = document.querySelector("#lessonTitle");
-const lessonMeta = document.querySelector("#lessonMeta");
-const coverPlaceholder = document.querySelector("#coverPlaceholder");
-const conceptContent = document.querySelector("#conceptContent");
+const pathCourseTitle = document.querySelector("#pathCourseTitle");
+const pathCourseMeta = document.querySelector("#pathCourseMeta");
+const pathTimeline = document.querySelector("#pathTimeline");
+const changeCourseBtn = document.querySelector("#changeCourseBtn");
+
+const pointTitle = document.querySelector("#pointTitle");
+const pointMeta = document.querySelector("#pointMeta");
+const pointCover = document.querySelector("#pointCover");
+const pointConcept = document.querySelector("#pointConcept");
+const backToPathBtn = document.querySelector("#backToPathBtn");
 const startQuizBtn = document.querySelector("#startQuizBtn");
 
 const quizProgress = document.querySelector("#quizProgress");
 const quizTypeTag = document.querySelector("#quizTypeTag");
 const quizPrompt = document.querySelector("#quizPrompt");
 const quizBody = document.querySelector("#quizBody");
-const prevQuestionBtn = document.querySelector("#prevQuestionBtn");
+const quizFeedback = document.querySelector("#quizFeedback");
+const submitAnswerBtn = document.querySelector("#submitAnswerBtn");
 const nextQuestionBtn = document.querySelector("#nextQuestionBtn");
-const submitQuizBtn = document.querySelector("#submitQuizBtn");
 
-const resultScore = document.querySelector("#resultScore");
-const resultXp = document.querySelector("#resultXp");
-const resultBackBtn = document.querySelector("#resultBackBtn");
+const finishText = document.querySelector("#finishText");
+const finishXp = document.querySelector("#finishXp");
+const continuePathBtn = document.querySelector("#continuePathBtn");
+const backToPathFromFinishBtn = document.querySelector("#backToPathFromFinishBtn");
 
 function showView(name) {
-  Object.entries(views).forEach(([key, node]) => {
-    node.classList.toggle("hidden", key !== name);
+  Object.entries(views).forEach(([key, element]) => {
+    element.classList.toggle("hidden", key !== name);
   });
   logoutBtn.classList.toggle("hidden", name === "auth");
 }
 
-function showAuthMessage(text, isError = true) {
-  authMessage.textContent = text;
+function showAuthMessage(message, isError = true) {
+  authMessage.textContent = message;
   authMessage.className = isError ? "message status-bad" : "message status-ok";
 }
 
@@ -68,100 +78,160 @@ function typeLabel(type) {
   return map[type] || "题目";
 }
 
-function renderDashboard() {
+function getSelectedCourse() {
+  return state.courses.find((course) => course.id === state.selectedCourseId) || null;
+}
+
+function updateHeader() {
+  if (!state.user) {
+    return;
+  }
   welcomeTitle.textContent = `欢迎，${state.user.username}`;
   xpValue.textContent = String(state.user.xp);
   disclaimerText.textContent = state.disclaimer;
-  skillTree.innerHTML = "";
+}
 
-  state.skills.forEach((skill) => {
-    const skillCard = document.createElement("article");
-    skillCard.className = "card skill-card";
-    skillCard.style.borderLeftColor = skill.color;
-    skillCard.innerHTML = `
-      <h4>${skill.name}</h4>
-      <p class="muted">${skill.description}</p>
-      <div class="text-blue-placeholder">蓝底文字占位图：${skill.name}</div>
-    `;
+async function changeCourse(courseId) {
+  await window.Api.setCurrentCourse(courseId);
+  await refreshHomeAndRenderPath();
+}
 
-    skill.lessons.forEach((lesson) => {
-      const lessonItem = document.createElement("div");
-      lessonItem.className = "lesson-item";
-      lessonItem.innerHTML = `
-        <div class="lesson-meta">
-          <span class="tag ${lesson.level}">${lesson.level === "beginner" ? "入门" : "进阶"}</span>
-          <strong>${lesson.title}</strong>
-          <small class="muted">${lesson.estimatedMinutes} 分钟 · ${lesson.completed ? `已完成 ${lesson.score}` : "未完成"}</small>
-        </div>
-      `;
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.className = "primary-btn small-btn";
-      btn.textContent = "开始";
-      btn.addEventListener("click", () => openLesson(lesson.id));
-      lessonItem.appendChild(btn);
-      skillCard.appendChild(lessonItem);
+function renderCourseTabs() {
+  courseTabs.innerHTML = "";
+  state.courses.forEach((course) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "course-tab";
+    if (course.id === state.selectedCourseId) {
+      button.classList.add("active");
+    }
+    button.textContent = course.name;
+    button.addEventListener("click", async () => {
+      if (state.selectedCourseId === course.id) {
+        return;
+      }
+      await changeCourse(course.id);
     });
-
-    skillTree.appendChild(skillCard);
+    courseTabs.appendChild(button);
   });
 }
 
+function pointStateText(value) {
+  if (value === "completed") {
+    return "已完成";
+  }
+  if (value === "current") {
+    return "当前可学";
+  }
+  return "未解锁";
+}
+
+function renderPathTimeline() {
+  const course = getSelectedCourse();
+  if (!course) {
+    pathCourseTitle.textContent = "路径图";
+    pathCourseMeta.textContent = "暂无课程";
+    pathTimeline.innerHTML = "";
+    resumeHint.textContent = "";
+    return;
+  }
+
+  pathCourseTitle.textContent = `${course.name} 路径图`;
+  pathCourseMeta.textContent = "每个路径点：3~5 分钟文本 + 8 题（答错重试）";
+  pathTimeline.innerHTML = "";
+  resumeHint.textContent = course.resumePointId
+    ? `继续学习位置：${course.resumePointTitle || "当前路径点"}`
+    : "当前课程暂无可学习路径点。";
+
+  course.points.forEach((point) => {
+    const node = document.createElement("article");
+    node.className = `path-point state-${point.state}`;
+    node.innerHTML = `
+      <div class="point-main">
+        <strong>${point.order}. ${point.title}</strong>
+        <p class="muted">${point.readingMinutes} 分钟阅读 · 约 ${point.estimatedMinutes} 分钟学习</p>
+      </div>
+      <div class="point-side">
+        <span class="point-status">${pointStateText(point.state)}</span>
+      </div>
+    `;
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "small-btn primary-btn";
+    button.textContent = point.state === "completed" ? "重学" : "学习";
+    button.disabled = point.state === "locked";
+    button.addEventListener("click", () => openPoint(point.id));
+    node.querySelector(".point-side").appendChild(button);
+    pathTimeline.appendChild(node);
+  });
+}
+
+function renderPointContent() {
+  if (!state.activePoint) {
+    return;
+  }
+  pointTitle.textContent = state.activePoint.title;
+  pointMeta.textContent = `路径点 ${state.activePoint.order} · 文本约 ${state.activePoint.readingMinutes} 分钟`;
+  pointCover.textContent = `蓝底文字占位图：${state.activePoint.title}`;
+  pointConcept.innerHTML = state.activePoint.chapterText.map((line) => `<p>${line}</p>`).join("");
+}
+
 function buildOptions(question, selectedValue) {
-  const grid = document.createElement("div");
-  grid.className = "options-grid";
+  const group = document.createElement("div");
+  group.className = "options-grid";
   question.options.forEach((option) => {
     const button = document.createElement("button");
     button.type = "button";
     button.className = "option-btn";
+    button.textContent = option;
     if (selectedValue === option) {
       button.classList.add("active");
     }
-    button.textContent = option;
     button.addEventListener("click", () => {
       state.responses[question.id] = option;
-      renderCurrentQuestion();
+      renderQuestion();
     });
-    grid.appendChild(button);
+    group.appendChild(button);
   });
-  return grid;
+  return group;
 }
 
-function renderCurrentQuestion() {
-  const lesson = state.currentLesson;
-  const question = lesson.questions[state.questionIndex];
-  const total = lesson.questions.length;
-  const response = state.responses[question.id];
-
-  quizProgress.textContent = `第 ${state.questionIndex + 1} / ${total} 题`;
+function renderQuestion() {
+  const question = state.activePoint.questions[state.currentQuestionIndex];
+  quizProgress.textContent = `第 ${state.currentQuestionIndex + 1} / ${state.activePoint.questions.length} 题`;
   quizTypeTag.textContent = typeLabel(question.type);
   quizPrompt.textContent = question.prompt;
   quizBody.innerHTML = "";
+  quizFeedback.textContent = "";
+  quizFeedback.className = "message";
+  nextQuestionBtn.classList.add("hidden");
+
+  const response = state.responses[question.id];
 
   if (question.type === "multiple_choice") {
     quizBody.appendChild(buildOptions(question, response));
+    return;
   }
 
   if (question.type === "fill_blank") {
     const input = document.createElement("input");
     input.type = "text";
-    input.placeholder = "输入你的答案";
+    input.placeholder = "请输入答案";
     input.value = response || "";
     input.addEventListener("input", () => {
       state.responses[question.id] = input.value;
     });
     quizBody.appendChild(input);
+    return;
   }
 
   if (question.type === "flip_card") {
     const card = document.createElement("details");
     card.className = "flip-card";
-    card.innerHTML = `
-      <summary>${question.front}</summary>
-      <p>${question.back}</p>
-    `;
+    card.innerHTML = `<summary>${question.front}</summary><p>${question.back}</p>`;
     quizBody.appendChild(card);
     quizBody.appendChild(buildOptions(question, response));
+    return;
   }
 
   if (question.type === "drag_match") {
@@ -182,9 +252,7 @@ function renderCurrentQuestion() {
         const option = document.createElement("option");
         option.value = rightItem;
         option.textContent = rightItem;
-        if (currentMap[leftItem] === rightItem) {
-          option.selected = true;
-        }
+        option.selected = currentMap[leftItem] === rightItem;
         select.appendChild(option);
       });
       select.addEventListener("change", () => {
@@ -198,35 +266,54 @@ function renderCurrentQuestion() {
     });
     quizBody.appendChild(container);
   }
-
-  prevQuestionBtn.disabled = state.questionIndex === 0;
-  const isLast = state.questionIndex === total - 1;
-  nextQuestionBtn.classList.toggle("hidden", isLast);
-  submitQuizBtn.classList.toggle("hidden", !isLast);
 }
 
-function renderLessonView() {
-  const lesson = state.currentLesson;
-  lessonTitle.textContent = lesson.title;
-  lessonMeta.textContent = `${lesson.level === "beginner" ? "入门" : "进阶"} · ${lesson.estimatedMinutes} 分钟`;
-  coverPlaceholder.textContent = `蓝底文字占位图：${lesson.title}`;
-  conceptContent.innerHTML = lesson.concept.map((line) => `<p>${line}</p>`).join("");
-}
-
-async function loadSkills() {
-  const data = await window.Api.skills();
+async function refreshHomeAndRenderPath() {
+  const data = await window.Api.progress();
   state.user = data.user;
-  state.skills = data.skills;
   state.disclaimer = data.disclaimer;
+  state.courses = data.courses;
+  state.selectedCourseId = data.selectedCourseId || data.courses[0]?.id || null;
+  updateHeader();
+  renderCourseTabs();
+  renderPathTimeline();
+  showView("path");
 }
 
-async function openLesson(lessonId) {
-  const data = await window.Api.lesson(lessonId);
-  state.currentLesson = data.lesson;
-  state.questionIndex = 0;
+async function openPoint(pointId) {
+  const data = await window.Api.getPoint(pointId);
+  state.activePoint = data.pathPoint;
+  state.currentQuestionIndex = 0;
   state.responses = {};
-  renderLessonView();
-  showView("lesson");
+  renderPointContent();
+  showView("content");
+}
+
+async function submitCurrentAnswer() {
+  const question = state.activePoint.questions[state.currentQuestionIndex];
+  const response = state.responses[question.id];
+  const result = await window.Api.submitQuestion(state.activePoint.id, question.id, response);
+  if (!result.correct) {
+    quizFeedback.textContent = "答错了，请重试本题直到答对。";
+    quizFeedback.className = "message status-bad";
+    return;
+  }
+
+  quizFeedback.textContent = "回答正确。";
+  quizFeedback.className = "message status-ok";
+  if (state.currentQuestionIndex < state.activePoint.questions.length - 1) {
+    nextQuestionBtn.classList.remove("hidden");
+    return;
+  }
+
+  const completed = await window.Api.completePoint(state.activePoint.id, state.responses);
+  state.completionResult = completed;
+  finishText.textContent = completed.finishedCourse
+    ? "本课程路径已完成，太棒了！"
+    : "本路径点已完成，已解锁下一路径点。";
+  finishXp.textContent = `本次 +${completed.xpGain} XP，当前总 XP：${completed.totalXp}`;
+  await refreshHomeAndRenderPath();
+  showView("finish");
 }
 
 async function doAuth(mode) {
@@ -236,27 +323,14 @@ async function doAuth(mode) {
     showAuthMessage("请填写用户名和密码");
     return;
   }
-
   const action = mode === "register" ? window.Api.register : window.Api.login;
   try {
-    const data = await action(username, password);
-    state.user = data.user;
+    await action(username, password);
     showAuthMessage(mode === "register" ? "注册成功，已自动登录" : "登录成功", false);
-    await loadSkills();
-    renderDashboard();
-    showView("dashboard");
+    await refreshHomeAndRenderPath();
   } catch (error) {
     showAuthMessage(error.message);
   }
-}
-
-async function submitQuiz() {
-  const data = await window.Api.submitLesson(state.currentLesson.id, state.responses);
-  resultScore.textContent = `得分：${data.grade.correct}/${data.grade.total}`;
-  resultXp.textContent = `获得 XP：+${data.xpGain}，当前总 XP：${data.totalXp}`;
-  await loadSkills();
-  renderDashboard();
-  showView("result");
 }
 
 authForm.addEventListener("submit", async (event) => {
@@ -274,52 +348,53 @@ logoutBtn.addEventListener("click", async () => {
   showView("auth");
 });
 
-backToDashboardBtn.addEventListener("click", () => {
-  showView("dashboard");
+changeCourseBtn.addEventListener("click", () => {
+  showView("course");
+});
+
+backToPathBtn.addEventListener("click", async () => {
+  await refreshHomeAndRenderPath();
 });
 
 startQuizBtn.addEventListener("click", () => {
-  state.questionIndex = 0;
-  renderCurrentQuestion();
+  renderQuestion();
   showView("quiz");
 });
 
-prevQuestionBtn.addEventListener("click", () => {
-  if (state.questionIndex > 0) {
-    state.questionIndex -= 1;
-    renderCurrentQuestion();
+submitAnswerBtn.addEventListener("click", async () => {
+  submitAnswerBtn.disabled = true;
+  try {
+    await submitCurrentAnswer();
+  } catch (error) {
+    quizFeedback.textContent = error.message;
+    quizFeedback.className = "message status-bad";
+  } finally {
+    submitAnswerBtn.disabled = false;
   }
 });
 
 nextQuestionBtn.addEventListener("click", () => {
-  if (state.currentLesson && state.questionIndex < state.currentLesson.questions.length - 1) {
-    state.questionIndex += 1;
-    renderCurrentQuestion();
-  }
+  state.currentQuestionIndex += 1;
+  renderQuestion();
 });
 
-submitQuizBtn.addEventListener("click", async () => {
-  submitQuizBtn.disabled = true;
-  try {
-    await submitQuiz();
-  } catch (error) {
-    alert(error.message);
-  } finally {
-    submitQuizBtn.disabled = false;
+continuePathBtn.addEventListener("click", async () => {
+  const course = getSelectedCourse();
+  if (!course?.resumePointId) {
+    await refreshHomeAndRenderPath();
+    return;
   }
+  await openPoint(course.resumePointId);
 });
 
-resultBackBtn.addEventListener("click", () => {
-  showView("dashboard");
+backToPathFromFinishBtn.addEventListener("click", async () => {
+  await refreshHomeAndRenderPath();
 });
 
 async function boot() {
   try {
-    const data = await window.Api.me();
-    state.user = data.user;
-    await loadSkills();
-    renderDashboard();
-    showView("dashboard");
+    await window.Api.me();
+    await refreshHomeAndRenderPath();
   } catch (_error) {
     showView("auth");
   }

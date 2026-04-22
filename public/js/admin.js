@@ -1,8 +1,8 @@
 const state = {
   user: null,
-  skills: [],
-  lessons: [],
-  editingLessonId: null,
+  courses: [],
+  pathPoints: [],
+  editingPathPointId: null,
 };
 
 const screens = {
@@ -13,22 +13,22 @@ const screens = {
 const adminLoginForm = document.querySelector("#admin-login-form");
 const adminLoginError = document.querySelector("#admin-login-error");
 const adminLogoutBtn = document.querySelector("#admin-logout-btn");
-const adminLessonList = document.querySelector("#admin-lesson-list");
+const adminCourseList = document.querySelector("#admin-course-list");
 
-const lessonEditorForm = document.querySelector("#lesson-editor-form");
+const pathEditorForm = document.querySelector("#path-editor-form");
 const editorTitle = document.querySelector("#editor-title");
 const resetEditorBtn = document.querySelector("#reset-editor-btn");
 const editorError = document.querySelector("#editor-error");
 const editorSuccess = document.querySelector("#editor-success");
 
 function showScreen(name) {
-  Object.entries(screens).forEach(([key, node]) => {
-    node.classList.toggle("active", key === name);
+  Object.entries(screens).forEach(([key, element]) => {
+    element.classList.toggle("active", key === name);
   });
 }
 
-function showLoginError(message) {
-  adminLoginError.textContent = message;
+function showLoginError(text) {
+  adminLoginError.textContent = text;
 }
 
 function setEditorMessage({ error = "", success = "" }) {
@@ -36,86 +36,139 @@ function setEditorMessage({ error = "", success = "" }) {
   editorSuccess.textContent = success;
 }
 
-function getEditorFields() {
-  const formData = new FormData(lessonEditorForm);
-  return {
-    lessonId: String(formData.get("lessonId") || "").trim(),
-    skillId: String(formData.get("skillId") || "").trim(),
-    level: String(formData.get("level") || "").trim(),
-    title: String(formData.get("title") || "").trim(),
-    estimatedMinutes: Number(formData.get("estimatedMinutes") || 6),
-    conceptLines: String(formData.get("conceptLines") || ""),
-    questionsJson: String(formData.get("questionsJson") || ""),
-  };
+function defaultQuestionTemplate() {
+  return JSON.stringify(
+    [
+      {
+        type: "multiple_choice",
+        prompt: "示例题目",
+        options: ["A", "B", "C", "D"],
+        answer: "A",
+      },
+      {
+        type: "fill_blank",
+        prompt: "示例填空___",
+        answer: "答案",
+      },
+      {
+        type: "drag_match",
+        prompt: "示例配对",
+        leftItems: ["左1", "左2"],
+        rightItems: ["右1", "右2"],
+        correctMap: {
+          左1: "右1",
+          左2: "右2",
+        },
+      },
+      {
+        type: "flip_card",
+        front: "卡片正面",
+        back: "卡片背面",
+        prompt: "翻卡后回答",
+        options: ["选项1", "选项2"],
+        answer: "选项1",
+      },
+      {
+        type: "multiple_choice",
+        prompt: "示例题 5",
+        options: ["A", "B"],
+        answer: "A",
+      },
+      {
+        type: "multiple_choice",
+        prompt: "示例题 6",
+        options: ["A", "B"],
+        answer: "B",
+      },
+      {
+        type: "fill_blank",
+        prompt: "示例题 7 ___",
+        answer: "好",
+      },
+      {
+        type: "multiple_choice",
+        prompt: "示例题 8",
+        options: ["A", "B"],
+        answer: "A",
+      },
+    ],
+    null,
+    2,
+  );
 }
 
-function setEditorLesson(lesson = null) {
-  const skillSelect = lessonEditorForm.querySelector('select[name="skillId"]');
-  const levelSelect = lessonEditorForm.querySelector('select[name="level"]');
-  const lessonIdInput = lessonEditorForm.querySelector('input[name="lessonId"]');
-  const titleInput = lessonEditorForm.querySelector('input[name="title"]');
-  const minutesInput = lessonEditorForm.querySelector('input[name="estimatedMinutes"]');
-  const conceptInput = lessonEditorForm.querySelector('textarea[name="conceptLines"]');
-  const questionsInput = lessonEditorForm.querySelector('textarea[name="questionsJson"]');
-
-  state.editingLessonId = lesson ? lesson.id : null;
-  lessonIdInput.value = lesson ? lesson.id : "";
-  editorTitle.textContent = lesson ? "编辑课程" : "新增课程";
-  titleInput.value = lesson ? lesson.title : "";
-  minutesInput.value = String(lesson ? lesson.estimatedMinutes : 6);
-  levelSelect.value = lesson ? lesson.level : "beginner";
-  skillSelect.value = lesson ? lesson.skillId : state.skills[0]?.id || "";
-  conceptInput.value = lesson ? lesson.concept.join("\n") : "";
-  questionsInput.value = lesson
-    ? JSON.stringify(lesson.questions, null, 2)
-    : JSON.stringify(
-        [
-          {
-            type: "multiple_choice",
-            prompt: "示例题目",
-            options: ["A", "B", "C", "D"],
-            answer: "A",
-          },
-        ],
-        null,
-        2,
-      );
-  setEditorMessage({
-    success: "可新增或编辑课程。注意：每章必须 8 道题。",
-  });
-}
-
-function renderSkillOptions() {
-  const skillSelect = lessonEditorForm.querySelector('select[name="skillId"]');
-  skillSelect.innerHTML = state.skills
-    .map((skill) => `<option value="${skill.id}">${skill.name}</option>`)
+function renderCourseOptions() {
+  const select = pathEditorForm.querySelector('select[name="courseId"]');
+  select.innerHTML = state.courses
+    .map((course) => `<option value="${course.id}">${course.name}</option>`)
     .join("");
 }
 
-function renderLessonList() {
-  adminLessonList.innerHTML = "";
-  state.lessons.forEach((lesson) => {
-    const skillName = state.skills.find((skill) => skill.id === lesson.skillId)?.name || lesson.skillId;
-    const item = document.createElement("li");
-    item.className = "list-item";
-    item.innerHTML = `
-      <div>
-        <strong>${lesson.title}</strong>
-        <p class="muted">${skillName} · ${lesson.level} · ${lesson.estimatedMinutes} 分钟 · ${lesson.questions.length} 题</p>
-      </div>
-      <div class="inline-actions">
-        <button type="button" class="secondary-btn tiny edit-btn" data-id="${lesson.id}">编辑</button>
-        <button type="button" class="secondary-btn tiny delete-btn" data-id="${lesson.id}">删除</button>
-      </div>
+function setEditorPath(point = null) {
+  const pathIdInput = pathEditorForm.querySelector('input[name="pathId"]');
+  const courseSelect = pathEditorForm.querySelector('select[name="courseId"]');
+  const orderInput = pathEditorForm.querySelector('input[name="order"]');
+  const titleInput = pathEditorForm.querySelector('input[name="title"]');
+  const readingInput = pathEditorForm.querySelector('textarea[name="readingLines"]');
+  const questionsInput = pathEditorForm.querySelector('textarea[name="questionsJson"]');
+
+  state.editingPathPointId = point ? point.id : null;
+  pathIdInput.value = point ? point.id : "";
+  editorTitle.textContent = point ? "编辑路径点" : "新增路径点";
+  courseSelect.value = point ? point.courseId : state.courses[0]?.id || "";
+  orderInput.value = String(point ? point.order : 1);
+  titleInput.value = point ? point.title : "";
+  readingInput.value = point ? point.learningText.join("\n") : "";
+  questionsInput.value = point
+    ? JSON.stringify(point.questions, null, 2)
+    : defaultQuestionTemplate();
+
+  setEditorMessage({
+    success: "路径点需满足：阅读文本 3~5 分钟 + 8 道题。",
+  });
+}
+
+function renderCourseList() {
+  adminCourseList.innerHTML = "";
+  state.courses.forEach((course) => {
+    const wrapper = document.createElement("li");
+    wrapper.className = "list-group";
+    const points = state.pathPoints
+      .filter((point) => point.courseId === course.id)
+      .sort((a, b) => a.order - b.order);
+
+    const pointHtml =
+      points.length === 0
+        ? `<p class="muted tiny">暂无路径点</p>`
+        : points
+            .map(
+              (point) => `
+                <div class="list-item">
+                  <div>
+                    <strong>${point.order}. ${point.title}</strong>
+                    <p class="muted tiny">阅读 ${point.readingMinutes} 分钟 · 总时长 ${point.estimatedMinutes} 分钟</p>
+                  </div>
+                  <div class="inline-actions">
+                    <button type="button" class="secondary-btn tiny edit-btn" data-id="${point.id}">编辑</button>
+                    <button type="button" class="secondary-btn tiny delete-btn" data-id="${point.id}">删除</button>
+                  </div>
+                </div>
+              `,
+            )
+            .join("");
+
+    wrapper.innerHTML = `
+      <div class="course-list-header">${course.name}</div>
+      <div class="course-list-body">${pointHtml}</div>
     `;
-    adminLessonList.appendChild(item);
+    adminCourseList.appendChild(wrapper);
   });
 }
 
 async function loadAdminData() {
   const data = await window.Api.adminData();
-  state.skills = data.skills || [];
-  state.lessons = data.lessons || [];
+  state.courses = data.courses || [];
+  state.pathPoints = data.pathPoints || [];
 }
 
 async function ensureAdminSession() {
@@ -127,9 +180,9 @@ async function ensureAdminSession() {
     }
     state.user = me.user;
     await loadAdminData();
-    renderSkillOptions();
-    renderLessonList();
-    setEditorLesson();
+    renderCourseOptions();
+    renderCourseList();
+    setEditorPath();
     showScreen("dashboard");
   } catch (_error) {
     showScreen("login");
@@ -142,7 +195,6 @@ async function handleLogin(event) {
   const formData = new FormData(adminLoginForm);
   const username = String(formData.get("username") || "").trim();
   const password = String(formData.get("password") || "").trim();
-
   try {
     const data = await window.Api.login(username, password);
     if (data.user.role !== "admin") {
@@ -152,87 +204,92 @@ async function handleLogin(event) {
     }
     state.user = data.user;
     await loadAdminData();
-    renderSkillOptions();
-    renderLessonList();
-    setEditorLesson();
+    renderCourseOptions();
+    renderCourseList();
+    setEditorPath();
     showScreen("dashboard");
   } catch (error) {
     showLoginError(error.message);
   }
 }
 
-async function handleSaveLesson(event) {
+async function handleSavePath(event) {
   event.preventDefault();
   setEditorMessage({});
+  const formData = new FormData(pathEditorForm);
+  const courseId = String(formData.get("courseId") || "").trim();
+  const order = Number(formData.get("order") || 1);
+  const title = String(formData.get("title") || "").trim();
+  const readingLines = String(formData.get("readingLines") || "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const questionsJson = String(formData.get("questionsJson") || "");
 
-  const fields = getEditorFields();
   let questions;
   try {
-    questions = JSON.parse(fields.questionsJson);
+    questions = JSON.parse(questionsJson);
   } catch (error) {
     setEditorMessage({ error: `题目 JSON 格式错误：${error.message}` });
     return;
   }
 
   const payload = {
-    skillId: fields.skillId,
-    level: fields.level,
-    title: fields.title,
-    estimatedMinutes: fields.estimatedMinutes,
-    concept: fields.conceptLines
-      .split("\n")
-      .map((line) => line.trim())
-      .filter(Boolean),
+    courseId,
+    order,
+    title,
+    readingMinutes: 4,
+    estimatedMinutes: 8,
+    readingLines,
     questions,
   };
 
   try {
-    if (state.editingLessonId) {
-      await window.Api.updateLesson(state.editingLessonId, payload);
-      setEditorMessage({ success: "课程已更新" });
+    if (state.editingPathPointId) {
+      await window.Api.updatePoint(state.editingPathPointId, payload);
+      setEditorMessage({ success: "路径点已更新" });
     } else {
-      await window.Api.createLesson(payload);
-      setEditorMessage({ success: "课程已新增" });
+      await window.Api.createPoint(payload);
+      setEditorMessage({ success: "路径点已新增" });
     }
     await loadAdminData();
-    renderLessonList();
-    setEditorLesson();
+    renderCourseList();
+    setEditorPath();
   } catch (error) {
     setEditorMessage({ error: error.message });
   }
 }
 
-async function handleDeleteLesson(lessonId) {
+async function handleDeletePath(id) {
   try {
-    await window.Api.deleteLesson(lessonId);
-    setEditorMessage({ success: "课程已删除" });
+    await window.Api.deletePoint(id);
+    setEditorMessage({ success: "路径点已删除" });
     await loadAdminData();
-    renderLessonList();
-    setEditorLesson();
+    renderCourseList();
+    setEditorPath();
   } catch (error) {
     setEditorMessage({ error: error.message });
   }
 }
 
-adminLessonList.addEventListener("click", (event) => {
+adminCourseList.addEventListener("click", (event) => {
   const editBtn = event.target.closest(".edit-btn");
   if (editBtn) {
-    const lesson = state.lessons.find((item) => item.id === editBtn.dataset.id);
-    if (lesson) {
-      setEditorLesson(lesson);
+    const point = state.pathPoints.find((item) => item.id === editBtn.dataset.id);
+    if (point) {
+      setEditorPath(point);
     }
     return;
   }
-
   const deleteBtn = event.target.closest(".delete-btn");
   if (deleteBtn) {
-    handleDeleteLesson(deleteBtn.dataset.id);
+    handleDeletePath(deleteBtn.dataset.id);
   }
 });
 
 adminLoginForm.addEventListener("submit", handleLogin);
-lessonEditorForm.addEventListener("submit", handleSaveLesson);
-resetEditorBtn.addEventListener("click", () => setEditorLesson());
+pathEditorForm.addEventListener("submit", handleSavePath);
+resetEditorBtn.addEventListener("click", () => setEditorPath());
 adminLogoutBtn.addEventListener("click", async () => {
   await window.Api.logout();
   showScreen("login");

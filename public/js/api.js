@@ -23,9 +23,6 @@ async function request(url, options = {}) {
 }
 
 window.Api = {
-  getDisclaimer() {
-    return request("/api/disclaimer");
-  },
   login(username, password) {
     return request("/api/auth/login", {
       method: "POST",
@@ -44,35 +41,49 @@ window.Api = {
   logout() {
     return request("/api/auth/logout", { method: "POST" });
   },
-  skills() {
-    return request("/api/skills");
+
+  learnHome() {
+    return request("/api/progress");
   },
-  lesson(lessonId) {
-    return request(`/api/lessons/${lessonId}`);
+  resumeCourse(courseId) {
+    return request("/api/progress/course", {
+      method: "PUT",
+      body: JSON.stringify({ courseId }),
+    });
   },
-  submitLesson(lessonId, responses) {
-    return request(`/api/lessons/${lessonId}/submit`, {
+  learnPoint(_courseId, pointId) {
+    return request(`/api/path-points/${pointId}`);
+  },
+  answerQuestion(pointId, questionId, response) {
+    return request(`/api/path-points/${pointId}/questions/${questionId}/submit`, {
+      method: "POST",
+      body: JSON.stringify({ response }),
+    });
+  },
+  completePoint(pointId, responses) {
+    return request(`/api/path-points/${pointId}/complete`, {
       method: "POST",
       body: JSON.stringify({ responses }),
     });
   },
+
   adminData() {
     return request("/api/admin/data");
   },
-  createLesson(payload) {
-    return request("/api/admin/lessons", {
+  createNode(payload) {
+    return request("/api/admin/points", {
       method: "POST",
       body: JSON.stringify(payload),
     });
   },
-  updateLesson(lessonId, payload) {
-    return request(`/api/admin/lessons/${lessonId}`, {
+  updateNode(nodeId, payload) {
+    return request(`/api/admin/points/${nodeId}`, {
       method: "PUT",
       body: JSON.stringify(payload),
     });
   },
-  deleteLesson(lessonId) {
-    return request(`/api/admin/lessons/${lessonId}`, {
+  deleteNode(nodeId) {
+    return request(`/api/admin/points/${nodeId}`, {
       method: "DELETE",
     });
   },

@@ -2,20 +2,44 @@ const fs = require("node:fs/promises");
 const path = require("node:path");
 const crypto = require("node:crypto");
 const bcrypt = require("bcryptjs");
+const { gradeLesson, gradeQuestion } = require("./grading");
 
 const DB_PATH = path.join(__dirname, "..", "data", "db.json");
+const LEVELS = ["beginner", "advanced"];
 
 function makeId(size = 10) {
   return crypto.randomUUID().replace(/-/g, "").slice(0, size);
 }
 
-function createLessonTemplates() {
-  const lessonBlueprints = [
+function levelLabel(level) {
+  return level === "advanced" ? "进阶" : "入门";
+}
+
+function normalizeQuestion(question, index) {
+  return {
+    ...question,
+    id: `q${index + 1}`,
+  };
+}
+
+function sanitizeQuestion(question) {
+  const clone = { ...question };
+  delete clone.answer;
+  delete clone.correctMap;
+  return clone;
+}
+
+function byOrder(a, b) {
+  return a.order - b.order;
+}
+
+function createPointBlueprints() {
+  return [
     {
       skillId: "tarot",
       level: "beginner",
       title: "塔罗入门：牌组与直觉",
-      concept: [
+      chapterText: [
         "塔罗常见体系为 78 张：22 张大阿尔卡那 + 56 张小阿尔卡那。",
         "入门重点不是背诵全部牌义，而是通过关键词建立联想。",
         "抽牌时可以先观察画面：人物动作、颜色、符号，再联想到问题场景。",
@@ -81,7 +105,7 @@ function createLessonTemplates() {
       skillId: "tarot",
       level: "advanced",
       title: "塔罗进阶：牌阵与解读结构",
-      concept: [
+      chapterText: [
         "进阶练习重点是“问题定义 + 牌阵位置 + 叙事整合”。",
         "同一张牌在不同位置会出现不同侧重点，例如“障碍位”与“建议位”。",
         "解读时建议按顺序表达：现状、影响因素、可行动作。",
@@ -147,7 +171,7 @@ function createLessonTemplates() {
       skillId: "zodiac",
       level: "beginner",
       title: "星座入门：元素与模式",
-      concept: [
+      chapterText: [
         "12 星座常按四元素分类：火、土、风、水。",
         "还可按三种模式划分：本位、固定、变动。",
         "入门学习可先掌握元素气质，再理解星座差异。",
@@ -213,7 +237,7 @@ function createLessonTemplates() {
       skillId: "zodiac",
       level: "advanced",
       title: "星座进阶：星盘三要素",
-      concept: [
+      chapterText: [
         "常见的入门进阶框架：太阳、月亮、上升。",
         "太阳常代表核心意识，月亮代表情绪模式，上升代表外在风格。",
         "三者组合解读比单看太阳星座更立体。",
@@ -279,7 +303,7 @@ function createLessonTemplates() {
       skillId: "yijing",
       level: "beginner",
       title: "周易入门：阴阳与八卦",
-      concept: [
+      chapterText: [
         "周易的核心之一是阴阳变化：阴爻与阳爻的组合形成卦象。",
         "八卦是基础符号体系，可用于理解自然与关系变化。",
         "入门学习重点是象义理解，不必一开始追求复杂推演。",
@@ -345,7 +369,7 @@ function createLessonTemplates() {
       skillId: "yijing",
       level: "advanced",
       title: "周易进阶：卦位与决策反思",
-      concept: [
+      chapterText: [
         "进阶可从“卦位关系、主客互动、时机判断”三个角度展开。",
         "同一卦象在不同问题中会有不同侧重点。",
         "周易实践可用于决策反思：识别风险、节奏与边界。",
@@ -411,7 +435,7 @@ function createLessonTemplates() {
       skillId: "shaman",
       level: "beginner",
       title: "萨满入门：自然连接与仪式感",
-      concept: [
+      chapterText: [
         "萨满学习常强调与自然、节律和内在感受的连接。",
         "入门实践可从简短呼吸、专注聆听、记录梦境开始。",
         "仪式感本质是帮助专注与自我整理。",
@@ -477,7 +501,7 @@ function createLessonTemplates() {
       skillId: "shaman",
       level: "advanced",
       title: "萨满进阶：象征解读与个人实践",
-      concept: [
+      chapterText: [
         "进阶练习可把体验记录整理为“象征-情绪-行动”三栏。",
         "象征解读强调个人语境，不同人可能有不同联想。",
         "通过周期复盘，能看见习惯、情绪与行为的关联。",
@@ -540,59 +564,98 @@ function createLessonTemplates() {
       ],
     },
   ];
+}
 
-  return lessonBlueprints.map((item) => ({
-    id: makeId(10),
-    skillId: item.skillId,
-    level: item.level,
-    title: item.title,
-    estimatedMinutes: 6,
-    concept: item.concept,
-    questions: item.questions.map((question, index) => ({
-      ...question,
-      id: `q${index + 1}`,
-    })),
-  }));
+function defaultSkills() {
+  return [
+    {
+      id: "tarot",
+      name: "塔罗",
+      description: "从牌义关键词到牌阵解读结构",
+      color: "#4a72ff",
+      order: 1,
+    },
+    {
+      id: "zodiac",
+      name: "星座",
+      description: "元素模式与星盘三要素",
+      color: "#2f9bff",
+      order: 2,
+    },
+    {
+      id: "yijing",
+      name: "周易",
+      description: "阴阳八卦与决策反思",
+      color: "#1f78b4",
+      order: 3,
+    },
+    {
+      id: "shaman",
+      name: "萨满",
+      description: "自然连接与象征实践",
+      color: "#155fa0",
+      order: 4,
+    },
+  ];
+}
+
+function createCourses(skills) {
+  const sortedSkills = [...skills].sort(byOrder);
+  const courses = [];
+  sortedSkills.forEach((skill, index) => {
+    LEVELS.forEach((level, levelIndex) => {
+      courses.push({
+        id: `${skill.id}-${level}`,
+        skillId: skill.id,
+        level,
+        title: `${skill.name}${levelLabel(level)}`,
+        color: skill.color,
+        order: index * 10 + levelIndex,
+      });
+    });
+  });
+  return courses.sort(byOrder);
+}
+
+function createSeedPoints(courses) {
+  const blueprints = createPointBlueprints();
+  const pointOrderMap = new Map();
+  return blueprints.map((blueprint) => {
+    const courseId = `${blueprint.skillId}-${blueprint.level}`;
+    const order = (pointOrderMap.get(courseId) || 0) + 1;
+    pointOrderMap.set(courseId, order);
+    const course = courses.find((item) => item.id === courseId);
+    return {
+      id: makeId(10),
+      courseId,
+      skillId: blueprint.skillId,
+      level: blueprint.level,
+      title: blueprint.title,
+      order,
+      estimatedMinutes: 8,
+      readingMinutes: 4,
+      chapterText: blueprint.chapterText,
+      questions: blueprint.questions.map(normalizeQuestion),
+      color: course?.color || "#4a72ff",
+    };
+  });
 }
 
 async function createSeedData() {
   const adminHash = await bcrypt.hash("admin123", 10);
   const learnerHash = await bcrypt.hash("demo123", 10);
+  const skills = defaultSkills();
+  const courses = createCourses(skills);
+  const points = createSeedPoints(courses);
+  const firstCourseId = courses[0]?.id ?? null;
+  const firstPointId = points.find((point) => point.courseId === firstCourseId)?.id ?? null;
 
   return {
     disclaimer:
       "本应用仅用于文化兴趣学习与娱乐体验，不构成医疗、法律、投资或人生决策建议。",
-    skills: [
-      {
-        id: "tarot",
-        name: "塔罗牌",
-        description: "从牌义关键词到牌阵解读结构",
-        color: "#4a72ff",
-        order: 1,
-      },
-      {
-        id: "zodiac",
-        name: "星座",
-        description: "元素模式与星盘三要素",
-        color: "#2f9bff",
-        order: 2,
-      },
-      {
-        id: "yijing",
-        name: "周易",
-        description: "阴阳八卦与决策反思",
-        color: "#1f78b4",
-        order: 3,
-      },
-      {
-        id: "shaman",
-        name: "萨满",
-        description: "自然连接与象征实践",
-        color: "#155fa0",
-        order: 4,
-      },
-    ],
-    lessons: createLessonTemplates(),
+    skills,
+    courses,
+    points,
     users: [
       {
         id: makeId(10),
@@ -600,7 +663,11 @@ async function createSeedData() {
         passwordHash: adminHash,
         role: "admin",
         xp: 0,
-        completedLessons: {},
+        completedPoints: {},
+        lastSession: {
+          courseId: firstCourseId,
+          pointId: firstPointId,
+        },
       },
       {
         id: makeId(10),
@@ -608,25 +675,22 @@ async function createSeedData() {
         passwordHash: learnerHash,
         role: "learner",
         xp: 0,
-        completedLessons: {},
+        completedPoints: {},
+        lastSession: {
+          courseId: firstCourseId,
+          pointId: firstPointId,
+        },
       },
     ],
   };
 }
 
-function sanitizeQuestion(question) {
-  const clone = { ...question };
-  delete clone.answer;
-  delete clone.correctMap;
-  return clone;
-}
-
-function sortLessons(lessons) {
-  return [...lessons].sort((a, b) => {
-    if (a.level === b.level) {
-      return a.title.localeCompare(b.title, "zh-Hans-CN");
+function sortPoints(points) {
+  return [...points].sort((a, b) => {
+    if (a.courseId === b.courseId) {
+      return a.order - b.order;
     }
-    return a.level === "beginner" ? -1 : 1;
+    return a.courseId.localeCompare(b.courseId, "zh-Hans-CN");
   });
 }
 
@@ -639,12 +703,90 @@ class DataStore {
     try {
       const raw = await fs.readFile(DB_PATH, "utf8");
       this.db = JSON.parse(raw);
+      await this.migrateIfNeeded();
+      await this.save();
     } catch (error) {
       if (error.code !== "ENOENT") {
         throw error;
       }
       this.db = await createSeedData();
       await this.save();
+    }
+  }
+
+  async migrateIfNeeded() {
+    const hasNewSchema = Array.isArray(this.db.courses) && Array.isArray(this.db.points);
+    if (!hasNewSchema) {
+      this.db = await this.migrateLegacySchema(this.db);
+    }
+
+    this.db.skills = Array.isArray(this.db.skills) ? this.db.skills : defaultSkills();
+    this.db.courses = Array.isArray(this.db.courses) ? this.db.courses : createCourses(this.db.skills);
+    this.db.points = Array.isArray(this.db.points) ? this.db.points : [];
+    this.db.users = Array.isArray(this.db.users) ? this.db.users : [];
+    this.db.users.forEach((user) => this.ensureUserFields(user));
+  }
+
+  async migrateLegacySchema(legacyDb) {
+    if (!Array.isArray(legacyDb.lessons)) {
+      return createSeedData();
+    }
+
+    const skills = Array.isArray(legacyDb.skills) && legacyDb.skills.length > 0 ? legacyDb.skills : defaultSkills();
+    const courses = createCourses(skills);
+    const pointOrderMap = new Map();
+    const points = legacyDb.lessons.map((lesson) => {
+      const courseId = `${lesson.skillId}-${lesson.level}`;
+      const order = (pointOrderMap.get(courseId) || 0) + 1;
+      pointOrderMap.set(courseId, order);
+      return {
+        id: lesson.id || makeId(10),
+        courseId,
+        skillId: lesson.skillId,
+        level: lesson.level,
+        title: lesson.title,
+        order,
+        estimatedMinutes: Number(lesson.estimatedMinutes || 8),
+        readingMinutes: 4,
+        chapterText: lesson.concept || [],
+        questions: (lesson.questions || []).map(normalizeQuestion),
+        color: courses.find((course) => course.id === courseId)?.color || "#4a72ff",
+      };
+    });
+
+    const fallbackCourseId = courses[0]?.id ?? null;
+    const fallbackPointId = points.find((item) => item.courseId === fallbackCourseId)?.id ?? null;
+    const users = (legacyDb.users || []).map((user) => ({
+      ...user,
+      xp: Number(user.xp || 0),
+      completedPoints: user.completedPoints || user.completedLessons || {},
+      lastSession: {
+        courseId: user.lastSession?.courseId || fallbackCourseId,
+        pointId: user.lastSession?.pointId || fallbackPointId,
+      },
+    }));
+
+    return {
+      disclaimer:
+        legacyDb.disclaimer ||
+        "本应用仅用于文化兴趣学习与娱乐体验，不构成医疗、法律、投资或人生决策建议。",
+      skills,
+      courses,
+      points,
+      users,
+    };
+  }
+
+  ensureUserFields(user) {
+    user.completedPoints = user.completedPoints || user.completedLessons || {};
+    delete user.completedLessons;
+    if (!user.lastSession || typeof user.lastSession !== "object") {
+      const firstCourseId = this.db.courses[0]?.id ?? null;
+      const firstPointId = this.getCoursePoints(firstCourseId)[0]?.id ?? null;
+      user.lastSession = { courseId: firstCourseId, pointId: firstPointId };
+    }
+    if (!Number.isFinite(user.xp)) {
+      user.xp = 0;
     }
   }
 
@@ -671,117 +813,284 @@ class DataStore {
       username: user.username,
       role: user.role,
       xp: user.xp,
-      completedLessons: user.completedLessons,
+      completedPoints: user.completedPoints,
+      lastSession: user.lastSession,
     };
   }
 
   async createUser({ username, password, role = "learner" }) {
     const passwordHash = await bcrypt.hash(password, 10);
+    const firstCourseId = this.db.courses[0]?.id ?? null;
+    const firstPointId = this.getCoursePoints(firstCourseId)[0]?.id ?? null;
     const user = {
       id: makeId(10),
       username,
       passwordHash,
       role,
       xp: 0,
-      completedLessons: {},
+      completedPoints: {},
+      lastSession: {
+        courseId: firstCourseId,
+        pointId: firstPointId,
+      },
     };
     this.db.users.push(user);
     await this.save();
     return user;
   }
 
-  getSkillsWithLessons(user) {
-    const skills = [...this.db.skills].sort((a, b) => a.order - b.order);
-    return skills.map((skill) => {
-      const lessons = sortLessons(
-        this.db.lessons.filter((lesson) => lesson.skillId === skill.id),
-      ).map((lesson) => ({
-        id: lesson.id,
-        title: lesson.title,
-        level: lesson.level,
-        estimatedMinutes: lesson.estimatedMinutes,
-        completed: Boolean(user.completedLessons[lesson.id]),
-        score: user.completedLessons[lesson.id]?.score ?? null,
-      }));
-      return {
-        ...skill,
-        lessons,
-      };
-    });
+  getCoursePoints(courseId) {
+    return sortPoints(this.db.points.filter((point) => point.courseId === courseId));
   }
 
-  getPublicLesson(lessonId) {
-    const lesson = this.db.lessons.find((item) => item.id === lessonId);
-    if (!lesson) {
-      return null;
+  getCourseById(courseId) {
+    return this.db.courses.find((course) => course.id === courseId) || null;
+  }
+
+  isPointUnlocked(user, pointId) {
+    const point = this.db.points.find((item) => item.id === pointId);
+    if (!point) {
+      return false;
     }
+    const points = this.getCoursePoints(point.courseId);
+    const currentIndex = points.findIndex((item) => item.id === pointId);
+    if (currentIndex < 0) {
+      return false;
+    }
+    if (currentIndex === 0) {
+      return true;
+    }
+    for (let i = 0; i < currentIndex; i += 1) {
+      if (!user.completedPoints[points[i].id]) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  getFirstActivePoint(user, courseId) {
+    const points = this.getCoursePoints(courseId);
+    return points.find((point) => !user.completedPoints[point.id]) || points[0] || null;
+  }
+
+  getLearningHome(user) {
+    const courses = [...this.db.courses].sort(byOrder);
+    const selectedCourseId =
+      courses.find((course) => course.id === user.lastSession?.courseId)?.id || courses[0]?.id || null;
+    const resumePointId = user.lastSession?.pointId || this.getFirstActivePoint(user, selectedCourseId)?.id || null;
+
+    const resultCourses = courses.map((course) => {
+      const points = this.getCoursePoints(course.id);
+      let foundCurrent = false;
+      const normalizedPoints = points.map((point) => {
+        if (user.completedPoints[point.id]) {
+          return {
+            id: point.id,
+            title: point.title,
+            order: point.order,
+            estimatedMinutes: point.estimatedMinutes,
+            readingMinutes: point.readingMinutes,
+            textDurationMinutes: point.readingMinutes,
+            status: "completed",
+            state: "completed",
+          };
+        }
+        if (!foundCurrent) {
+          foundCurrent = true;
+          return {
+            id: point.id,
+            title: point.title,
+            order: point.order,
+            estimatedMinutes: point.estimatedMinutes,
+            readingMinutes: point.readingMinutes,
+            textDurationMinutes: point.readingMinutes,
+            status: "current",
+            state: "current",
+          };
+        }
+        return {
+          id: point.id,
+          title: point.title,
+          order: point.order,
+          estimatedMinutes: point.estimatedMinutes,
+          readingMinutes: point.readingMinutes,
+          textDurationMinutes: point.readingMinutes,
+          status: "locked",
+          state: "locked",
+        };
+      });
+
+      const courseResumePointId =
+        user.lastSession?.courseId === course.id
+          ? user.lastSession?.pointId || null
+          : this.getFirstActivePoint(user, course.id)?.id || points[0]?.id || null;
+
+      return {
+        ...course,
+        name: course.title,
+        resumePointId: courseResumePointId,
+        points: normalizedPoints,
+      };
+    });
+
     return {
-      id: lesson.id,
-      skillId: lesson.skillId,
-      level: lesson.level,
-      title: lesson.title,
-      estimatedMinutes: lesson.estimatedMinutes,
-      concept: lesson.concept,
-      questions: lesson.questions.map(sanitizeQuestion),
+      selectedCourseId,
+      resumePointId,
+      courses: resultCourses,
     };
   }
 
-  getLessonWithAnswers(lessonId) {
-    return this.db.lessons.find((item) => item.id === lessonId) || null;
+  async updateLastSession(userId, { courseId, pointId }) {
+    const user = this.getUserById(userId);
+    if (!user) {
+      return;
+    }
+    user.lastSession = {
+      courseId: courseId || user.lastSession?.courseId || null,
+      pointId: pointId || user.lastSession?.pointId || null,
+    };
+    await this.save();
   }
 
-  async updateProgress({ userId, lessonId, grade }) {
+  getPointById(pointId) {
+    return this.db.points.find((item) => item.id === pointId) || null;
+  }
+
+  getPublicPoint(courseId, pointId) {
+    const point = this.db.points.find((item) => item.id === pointId && item.courseId === courseId);
+    if (!point) {
+      return null;
+    }
+    return {
+      id: point.id,
+      courseId: point.courseId,
+      title: point.title,
+      order: point.order,
+      estimatedMinutes: point.estimatedMinutes,
+      readingMinutes: point.readingMinutes,
+      chapterText: point.chapterText,
+      questions: point.questions.map(sanitizeQuestion),
+    };
+  }
+
+  getPointWithAnswers(pointId) {
+    return this.db.points.find((item) => item.id === pointId) || null;
+  }
+
+  checkPointQuestion(pointId, questionId, response) {
+    const point = this.getPointWithAnswers(pointId);
+    if (!point) {
+      return { error: "路径点不存在" };
+    }
+    const question = point.questions.find((item) => item.id === questionId);
+    if (!question) {
+      return { error: "题目不存在" };
+    }
+    return {
+      correct: gradeQuestion(question, response),
+      question,
+      point,
+    };
+  }
+
+  async completePoint({ userId, pointId, responses }) {
+    const point = this.getPointWithAnswers(pointId);
+    if (!point) {
+      return { error: "路径点不存在" };
+    }
     const user = this.getUserById(userId);
-    const hadCompletion = Boolean(user.completedLessons[lessonId]);
-    const xpGain = grade.correct * 10 + (grade.correct === grade.total ? 20 : 0);
-    user.xp += xpGain;
-    user.completedLessons[lessonId] = {
+    if (!this.isPointUnlocked(user, point.id)) {
+      return { error: "当前路径点尚未解锁" };
+    }
+    const grade = gradeLesson(point, responses || {});
+    if (grade.correct !== grade.total) {
+      return { error: "请先答对全部 8 题", grade };
+    }
+    const hadCompletion = Boolean(user.completedPoints[point.id]);
+    const xpGain = hadCompletion ? 0 : 80;
+    user.completedPoints[point.id] = {
       score: `${grade.correct}/${grade.total}`,
       timestamp: Date.now(),
       xpGain,
     };
+    user.xp += xpGain;
+    const nextPoint = this.getCoursePoints(point.courseId).find((item) => !user.completedPoints[item.id]) || null;
+    user.lastSession = {
+      courseId: point.courseId,
+      pointId: nextPoint ? nextPoint.id : point.id,
+    };
     await this.save();
     return {
+      grade,
       xpGain,
       totalXp: user.xp,
+      nextPointId: nextPoint?.id || null,
+      finishedCourse: !nextPoint,
       firstCompletion: !hadCompletion,
     };
   }
 
-  getAdminLessons() {
-    return sortLessons(this.db.lessons);
+  getAdminPoints() {
+    return sortPoints(this.db.points);
   }
 
-  async createLesson(payload) {
-    const lesson = {
+  getAdminOverview() {
+    return {
+      courses: [...this.db.courses].sort(byOrder),
+      pathPoints: this.getAdminPoints().map((point) => ({
+        id: point.id,
+        courseId: point.courseId,
+        order: point.order,
+        title: point.title,
+        estimatedMinutes: point.estimatedMinutes,
+        readingMinutes: point.readingMinutes,
+        learningText: point.chapterText,
+        questions: point.questions,
+      })),
+    };
+  }
+
+  async createPoint(payload) {
+    const point = {
       id: makeId(10),
       ...payload,
+      chapterText: Array.isArray(payload.chapterText) ? payload.chapterText : [],
+      questions: payload.questions.map(normalizeQuestion),
     };
-    this.db.lessons.push(lesson);
+    this.db.points.push(point);
     await this.save();
-    return lesson;
+    return point;
   }
 
-  async updateLesson(lessonId, payload) {
-    const index = this.db.lessons.findIndex((lesson) => lesson.id === lessonId);
+  async updatePoint(pointId, payload) {
+    const index = this.db.points.findIndex((point) => point.id === pointId);
     if (index < 0) {
       return null;
     }
-    this.db.lessons[index] = {
-      ...this.db.lessons[index],
+    this.db.points[index] = {
+      ...this.db.points[index],
       ...payload,
-      id: lessonId,
+      id: pointId,
+      chapterText: Array.isArray(payload.chapterText) ? payload.chapterText : [],
+      questions: payload.questions.map(normalizeQuestion),
     };
     await this.save();
-    return this.db.lessons[index];
+    return this.db.points[index];
   }
 
-  async deleteLesson(lessonId) {
-    const before = this.db.lessons.length;
-    this.db.lessons = this.db.lessons.filter((lesson) => lesson.id !== lessonId);
-    if (this.db.lessons.length === before) {
+  async deletePoint(pointId) {
+    const before = this.db.points.length;
+    this.db.points = this.db.points.filter((point) => point.id !== pointId);
+    if (this.db.points.length === before) {
       return false;
     }
+    this.db.users.forEach((user) => {
+      delete user.completedPoints[pointId];
+      if (user.lastSession?.pointId === pointId) {
+        const fallbackPoint = this.getCoursePoints(user.lastSession.courseId)[0] || null;
+        user.lastSession.pointId = fallbackPoint?.id || null;
+      }
+    });
     await this.save();
     return true;
   }
@@ -789,4 +1098,5 @@ class DataStore {
 
 module.exports = {
   DataStore,
+  LEVELS,
 };

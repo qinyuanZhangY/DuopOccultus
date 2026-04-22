@@ -56,5 +56,6 @@ function gradeLesson(lesson, responsesByQuestionId) {
 }
 
 module.exports = {
+  gradeQuestion,
   gradeLesson,
 };

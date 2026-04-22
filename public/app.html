@@ -11,7 +11,7 @@
       <header class="topbar">
         <div>
           <h1>DuopOccultus</h1>
-          <p class="muted">神秘学娱乐学习</p>
+          <p class="muted">神秘学路径学习</p>
         </div>
         <button id="logoutBtn" class="secondary-btn small-btn hidden">退出</button>
       </header>
@@ -30,7 +30,7 @@
         <p id="authMessage" class="message"></p>
       </section>
 
-      <section id="dashboardView" class="hidden stack">
+      <section id="courseView" class="hidden stack">
         <article class="card">
           <div class="row-between">
             <h2 id="welcomeTitle">欢迎</h2>
@@ -38,25 +38,34 @@
           </div>
           <p id="disclaimerText" class="disclaimer"></p>
         </article>
-
         <article class="card">
-          <h3>技能树关卡</h3>
-          <div id="skillTree" class="skill-tree"></div>
+          <h3>课程选择</h3>
+          <div id="courseTabs" class="course-tabs"></div>
+          <p id="resumeHint" class="muted"></p>
         </article>
       </section>
 
-      <section id="lessonView" class="hidden stack">
+      <section id="pathView" class="hidden stack">
         <article class="card">
-          <button id="backToDashboardBtn" class="secondary-btn small-btn">返回技能树</button>
-          <h2 id="lessonTitle"></h2>
-          <p id="lessonMeta" class="muted"></p>
-          <div id="coverPlaceholder" class="cover-placeholder"></div>
+          <div class="row-between">
+            <h3 id="pathCourseTitle">路径图</h3>
+            <button id="changeCourseBtn" class="secondary-btn small-btn">切换课程</button>
+          </div>
+          <p id="pathCourseMeta" class="muted"></p>
+          <div id="pathTimeline" class="path-timeline"></div>
         </article>
+      </section>
 
+      <section id="contentView" class="hidden stack">
         <article class="card">
-          <h3>概念课</h3>
-          <div id="conceptContent" class="concept-content"></div>
-          <button id="startQuizBtn" class="primary-btn">开始 8 题挑战</button>
+          <div class="row-between">
+            <h3 id="pointTitle"></h3>
+            <button id="backToPathBtn" class="secondary-btn small-btn">返回路径图</button>
+          </div>
+          <p id="pointMeta" class="muted"></p>
+          <div id="pointCover" class="cover-placeholder"></div>
+          <div id="pointConcept" class="concept-content"></div>
+          <button id="startQuizBtn" class="primary-btn">开始本课答题</button>
         </article>
       </section>
 
@@ -68,20 +77,23 @@
           </div>
           <p id="quizPrompt" class="question-prompt"></p>
           <div id="quizBody"></div>
+          <p id="quizFeedback" class="message"></p>
           <div class="button-row">
-            <button id="prevQuestionBtn" class="secondary-btn">上一题</button>
-            <button id="nextQuestionBtn" class="primary-btn">下一题</button>
-            <button id="submitQuizBtn" class="primary-btn hidden">提交</button>
+            <button id="submitAnswerBtn" class="primary-btn">提交本题</button>
+            <button id="nextQuestionBtn" class="primary-btn hidden">下一题</button>
           </div>
         </article>
       </section>
 
-      <section id="resultView" class="hidden">
+      <section id="finishView" class="hidden">
         <article class="card">
-          <h3>本章完成</h3>
-          <p id="resultScore"></p>
-          <p id="resultXp"></p>
-          <button id="resultBackBtn" class="primary-btn">返回技能树</button>
+          <h3>路径点完成</h3>
+          <p id="finishText"></p>
+          <p id="finishXp"></p>
+          <div class="button-row">
+            <button id="continuePathBtn" class="primary-btn">进入下一路径点</button>
+            <button id="backToPathFromFinishBtn" class="secondary-btn">回路径图</button>
+          </div>
         </article>
       </section>
     </main>

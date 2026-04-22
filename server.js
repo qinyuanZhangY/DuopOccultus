@@ -3,12 +3,10 @@ const express = require("express");
 const session = require("express-session");
 const bcrypt = require("bcryptjs");
 const { DataStore } = require("./src/dataStore");
-const { gradeLesson } = require("./src/grading");
 
 const app = express();
 const store = new DataStore();
 
-const LEVELS = new Set(["beginner", "advanced"]);
 const QUESTION_TYPES = new Set([
   "multiple_choice",
   "drag_match",
@@ -31,7 +29,7 @@ app.use(
   }),
 );
 
-app.use(async (req, _res, next) => {
+app.use((req, _res, next) => {
   if (!req.session.userId) {
     req.currentUser = null;
     return next();
@@ -131,34 +129,37 @@ function validateQuestion(question, index) {
   return null;
 }
 
-function normalizeLessonPayload(payload) {
-  const skillId = normalizeString(payload.skillId);
-  const level = normalizeString(payload.level);
+function normalizePointPayload(payload) {
+  const courseId = normalizeString(payload.courseId);
   const title = normalizeString(payload.title);
-  const estimatedMinutes = Number(payload.estimatedMinutes || 6);
-  const concept = Array.isArray(payload.concept)
-    ? payload.concept.map(normalizeString).filter(Boolean)
+  const order = Number(payload.order);
+  const readingMinutes = Number(payload.readingMinutes || 4);
+  const estimatedMinutes = Number(payload.estimatedMinutes || 8);
+  const chapterText = Array.isArray(payload.readingLines)
+    ? payload.readingLines.map(normalizeString).filter(Boolean)
     : [];
-
   const questions = Array.isArray(payload.questions) ? payload.questions : [];
 
-  if (!store.db.skills.some((skill) => skill.id === skillId)) {
-    return { error: "技能模块不存在" };
-  }
-  if (!LEVELS.has(level)) {
-    return { error: "课程等级必须为 beginner 或 advanced" };
+  if (!courseId) {
+    return { error: "courseId 不能为空" };
   }
   if (!title) {
-    return { error: "课程标题不能为空" };
+    return { error: "路径点标题不能为空" };
+  }
+  if (!Number.isFinite(order) || order < 1) {
+    return { error: "序号必须大于 0" };
+  }
+  if (!Number.isFinite(readingMinutes) || readingMinutes < 3 || readingMinutes > 5) {
+    return { error: "文本时长需在 3 到 5 分钟之间" };
   }
   if (!Number.isFinite(estimatedMinutes) || estimatedMinutes < 5 || estimatedMinutes > 8) {
-    return { error: "课程时长需在 5 到 8 分钟之间" };
+    return { error: "路径点总时长需在 5 到 8 分钟之间" };
   }
-  if (concept.length < 2) {
-    return { error: "概念课内容至少 2 段" };
+  if (chapterText.length < 2) {
+    return { error: "学习文本至少 2 段" };
   }
   if (questions.length !== 8) {
-    return { error: "每章必须包含 8 道题" };
+    return { error: "每个路径点必须配置 8 道题" };
   }
 
   for (let i = 0; i < questions.length; i += 1) {
@@ -168,20 +169,15 @@ function normalizeLessonPayload(payload) {
     }
   }
 
-  const normalizedQuestions = questions.map((question, index) => ({
-    id: `q${index + 1}`,
-    ...question,
-    type: normalizeString(question.type),
-  }));
-
   return {
     value: {
-      skillId,
-      level,
+      courseId,
       title,
+      order,
+      readingMinutes,
       estimatedMinutes,
-      concept,
-      questions: normalizedQuestions,
+      chapterText,
+      questions,
     },
   };
 }
@@ -241,82 +237,133 @@ app.get("/api/auth/me", (req, res) => {
   return res.json({ user: store.getSafeUser(req.currentUser) });
 });
 
-app.get("/api/skills", requireAuth, (req, res) => {
-  const user = store.getSafeUser(req.currentUser);
-  const skills = store.getSkillsWithLessons(req.currentUser);
+app.get("/api/progress", requireAuth, (req, res) => {
+  const home = store.getLearningHome(req.currentUser);
   return res.json({
-    user,
-    skills,
+    user: store.getSafeUser(req.currentUser),
     disclaimer: store.getDisclaimer(),
+    courses: home.courses,
+    selectedCourseId: home.selectedCourseId,
+    resumePointId: home.resumePointId,
   });
 });
 
-app.get("/api/lessons/:lessonId", requireAuth, (req, res) => {
-  const lesson = store.getPublicLesson(req.params.lessonId);
-  if (!lesson) {
+app.put("/api/progress/course", requireAuth, async (req, res) => {
+  const courseId = normalizeString(req.body.courseId);
+  const course = store.getCourseById(courseId);
+  if (!course) {
     return res.status(404).json({ error: "课程不存在" });
   }
-  return res.json({ lesson });
-});
-
-app.post("/api/lessons/:lessonId/submit", requireAuth, async (req, res) => {
-  const lesson = store.getLessonWithAnswers(req.params.lessonId);
-  if (!lesson) {
-    return res.status(404).json({ error: "课程不存在" });
-  }
-
-  const responses = req.body.responses;
-  if (!responses || typeof responses !== "object") {
-    return res.status(400).json({ error: "提交内容格式错误" });
-  }
-
-  const grade = gradeLesson(lesson, responses);
-  const progress = await store.updateProgress({
-    userId: req.currentUser.id,
-    lessonId: lesson.id,
-    grade,
+  const point = store.getFirstActivePoint(req.currentUser, courseId);
+  await store.updateLastSession(req.currentUser.id, {
+    courseId,
+    pointId: point?.id || null,
   });
-
+  const home = store.getLearningHome(req.currentUser);
   return res.json({
-    grade,
-    xpGain: progress.xpGain,
-    totalXp: progress.totalXp,
-    firstCompletion: progress.firstCompletion,
+    user: store.getSafeUser(req.currentUser),
+    courses: home.courses,
+    selectedCourseId: home.selectedCourseId,
+    resumePointId: home.resumePointId,
+  });
+});
+
+app.get("/api/path-points/:pointId", requireAuth, async (req, res) => {
+  const point = store.getPointById(req.params.pointId);
+  if (!point) {
+    return res.status(404).json({ error: "路径点不存在" });
+  }
+  if (!store.isPointUnlocked(req.currentUser, point.id) && !req.currentUser.completedPoints[point.id]) {
+    return res.status(403).json({ error: "当前路径点尚未解锁" });
+  }
+  const publicPoint = store.getPublicPoint(point.courseId, point.id);
+  await store.updateLastSession(req.currentUser.id, {
+    courseId: point.courseId,
+    pointId: point.id,
+  });
+  return res.json({
+    pathPoint: {
+      id: publicPoint.id,
+      courseId: publicPoint.courseId,
+      title: publicPoint.title,
+      order: publicPoint.order,
+      estimatedMinutes: publicPoint.estimatedMinutes,
+      textDurationMinutes: publicPoint.readingMinutes,
+      textContent: publicPoint.chapterText,
+      questions: publicPoint.questions,
+    },
+    status: {
+      completed: Boolean(req.currentUser.completedPoints[point.id]),
+      currentQuestionIndex: 0,
+    },
+  });
+});
+
+app.post("/api/path-points/:pointId/questions/:questionId/submit", requireAuth, (req, res) => {
+  const point = store.getPointById(req.params.pointId);
+  if (!point) {
+    return res.status(404).json({ error: "路径点不存在" });
+  }
+  if (!store.isPointUnlocked(req.currentUser, point.id) && !req.currentUser.completedPoints[point.id]) {
+    return res.status(403).json({ error: "当前路径点尚未解锁" });
+  }
+  const checked = store.checkPointQuestion(req.params.pointId, req.params.questionId, req.body.response);
+  if (checked.error) {
+    return res.status(400).json({ error: checked.error });
+  }
+  return res.json({ correct: checked.correct });
+});
+
+app.post("/api/path-points/:pointId/complete", requireAuth, async (req, res) => {
+  const result = await store.completePoint({
+    userId: req.currentUser.id,
+    pointId: req.params.pointId,
+    responses: req.body.responses || {},
+  });
+  if (result.error) {
+    return res.status(400).json({ error: result.error, grade: result.grade });
+  }
+  return res.json({
+    ...result,
+    user: store.getSafeUser(req.currentUser),
   });
 });
 
 app.get("/api/admin/data", requireAdmin, (req, res) => {
-  return res.json({
-    skills: store.db.skills,
-    lessons: store.getAdminLessons(),
-  });
+  return res.json(store.getAdminOverview());
 });
 
-app.post("/api/admin/lessons", requireAdmin, async (req, res) => {
-  const normalized = normalizeLessonPayload(req.body);
+app.post("/api/admin/points", requireAdmin, async (req, res) => {
+  const normalized = normalizePointPayload(req.body);
   if (normalized.error) {
     return res.status(400).json({ error: normalized.error });
   }
-  const lesson = await store.createLesson(normalized.value);
-  return res.status(201).json({ lesson });
+  if (!store.getCourseById(normalized.value.courseId)) {
+    return res.status(400).json({ error: "courseId 不存在" });
+  }
+  const point = await store.createPoint(normalized.value);
+  return res.status(201).json({ point });
 });
 
-app.put("/api/admin/lessons/:lessonId", requireAdmin, async (req, res) => {
-  const normalized = normalizeLessonPayload(req.body);
+app.put("/api/admin/points/:pointId", requireAdmin, async (req, res) => {
+  const normalized = normalizePointPayload(req.body);
   if (normalized.error) {
     return res.status(400).json({ error: normalized.error });
   }
-  const lesson = await store.updateLesson(req.params.lessonId, normalized.value);
-  if (!lesson) {
-    return res.status(404).json({ error: "课程不存在" });
+  if (!store.getCourseById(normalized.value.courseId)) {
+    return res.status(400).json({ error: "courseId 不存在" });
   }
-  return res.json({ lesson });
+  const point = await store.updatePoint(req.params.pointId, normalized.value);
+  if (!point) {
+    return res.status(404).json({ error: "路径点不存在" });
+  }
+  return res.json({ point });
 });
 
-app.delete("/api/admin/lessons/:lessonId", requireAdmin, async (req, res) => {
-  const deleted = await store.deleteLesson(req.params.lessonId);
+app.delete("/api/admin/points/:pointId", requireAdmin, async (req, res) => {
+  const deleted = await store.deletePoint(req.params.pointId);
   if (!deleted) {
-    return res.status(404).json({ error: "课程不存在" });
+    return res.status(404).json({ error: "路径点不存在" });
   }
   return res.json({ ok: true });
 });

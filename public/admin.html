@@ -11,7 +11,7 @@
       <section class="screen admin-login-screen active" data-screen="login">
         <header>
           <h1>管理后台</h1>
-          <p class="muted">先用管理员账号登录：admin / admin123</p>
+          <p class="muted">请用管理员账号登录：admin / admin123</p>
         </header>
         <form id="admin-login-form" class="card admin-login-card">
           <label>
@@ -30,43 +30,36 @@
       <section class="screen admin-dashboard-screen" data-screen="dashboard">
         <header class="top-bar admin-top-bar">
           <div>
-            <h2>课程管理</h2>
-            <p class="muted">新增 / 编辑 / 删除课程（每课 8 题）</p>
+            <h2>路径点管理</h2>
+            <p class="muted">新增/编辑/删除课程路径点（文本 3~5 分钟 + 8 题）</p>
           </div>
           <button id="admin-logout-btn" class="ghost-btn">退出</button>
         </header>
         <section class="admin-main-grid">
           <section class="card admin-list-card">
-            <h3>现有课程</h3>
-            <ul id="admin-lesson-list" class="list"></ul>
+            <h3>课程与路径点</h3>
+            <ul id="admin-course-list" class="list"></ul>
           </section>
           <section class="card admin-editor-card">
-            <h3 id="editor-title">新增课程</h3>
-            <form id="lesson-editor-form">
-              <input type="hidden" name="lessonId" />
+            <h3 id="editor-title">新增路径点</h3>
+            <form id="path-editor-form">
+              <input type="hidden" name="pathId" />
               <div class="admin-form-grid">
                 <label>
-                  模块
-                  <select name="skillId" required></select>
+                  课程
+                  <select name="courseId" required></select>
                 </label>
                 <label>
-                  级别
-                  <select name="level" required>
-                    <option value="beginner">beginner</option>
-                    <option value="advanced">advanced</option>
-                  </select>
+                  序号（路径顺序）
+                  <input type="number" name="order" min="1" value="1" required />
                 </label>
                 <label class="full-row">
-                  标题
+                  路径标题
                   <input type="text" name="title" required />
                 </label>
-                <label>
-                  时长（5-8）
-                  <input type="number" name="estimatedMinutes" min="5" max="8" value="6" required />
-                </label>
                 <label class="full-row">
-                  概念课（每行一段）
-                  <textarea name="conceptLines" rows="4" required></textarea>
+                  学习文本（每行一段，3~5分钟）
+                  <textarea name="readingLines" rows="6" required></textarea>
                 </label>
                 <label class="full-row">
                   题目 JSON（必须 8 题）
@@ -74,7 +67,7 @@
                 </label>
               </div>
               <div class="action-row">
-                <button type="submit" class="primary-btn">保存课程</button>
+                <button type="submit" class="primary-btn">保存路径点</button>
                 <button id="reset-editor-btn" type="button" class="secondary-btn">清空</button>
               </div>
               <p id="editor-error" class="error-text"></p>
