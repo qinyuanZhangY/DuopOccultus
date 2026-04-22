@@ -45,7 +45,16 @@ window.Api = {
   learnHome() {
     return request("/api/progress");
   },
+  progress() {
+    return request("/api/progress");
+  },
   resumeCourse(courseId) {
+    return request("/api/progress/course", {
+      method: "PUT",
+      body: JSON.stringify({ courseId }),
+    });
+  },
+  setCurrentCourse(courseId) {
     return request("/api/progress/course", {
       method: "PUT",
       body: JSON.stringify({ courseId }),
@@ -54,7 +63,16 @@ window.Api = {
   learnPoint(_courseId, pointId) {
     return request(`/api/path-points/${pointId}`);
   },
+  getPoint(pointId) {
+    return request(`/api/path-points/${pointId}`);
+  },
   answerQuestion(pointId, questionId, response) {
+    return request(`/api/path-points/${pointId}/questions/${questionId}/submit`, {
+      method: "POST",
+      body: JSON.stringify({ response }),
+    });
+  },
+  submitQuestion(pointId, questionId, response) {
     return request(`/api/path-points/${pointId}/questions/${questionId}/submit`, {
       method: "POST",
       body: JSON.stringify({ response }),
