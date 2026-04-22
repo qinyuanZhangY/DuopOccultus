@@ -170,10 +170,17 @@ function renderPointContent() {
   if (!state.activePoint) {
     return;
   }
+  const chapterLines = Array.isArray(state.activePoint.chapterText)
+    ? state.activePoint.chapterText
+    : Array.isArray(state.activePoint.textContent)
+      ? state.activePoint.textContent
+      : [];
+  const readingMinutes =
+    state.activePoint.readingMinutes ?? state.activePoint.textDurationMinutes ?? 4;
   pointTitle.textContent = state.activePoint.title;
-  pointMeta.textContent = `路径点 ${state.activePoint.order} · 文本约 ${state.activePoint.readingMinutes} 分钟`;
+  pointMeta.textContent = `路径点 ${state.activePoint.order} · 文本约 ${readingMinutes} 分钟`;
   pointCover.textContent = `蓝底文字占位图：${state.activePoint.title}`;
-  pointConcept.innerHTML = state.activePoint.chapterText.map((line) => `<p>${line}</p>`).join("");
+  pointConcept.innerHTML = chapterLines.map((line) => `<p>${line}</p>`).join("");
 }
 
 function buildOptions(question, selectedValue) {
@@ -282,7 +289,13 @@ async function refreshHomeAndRenderPath() {
 
 async function openPoint(pointId) {
   const data = await window.Api.getPoint(pointId);
-  state.activePoint = data.pathPoint;
+  state.activePoint = {
+    ...data.pathPoint,
+    chapterText: Array.isArray(data.pathPoint.chapterText)
+      ? data.pathPoint.chapterText
+      : data.pathPoint.textContent,
+    readingMinutes: data.pathPoint.readingMinutes ?? data.pathPoint.textDurationMinutes ?? 4,
+  };
   state.currentQuestionIndex = 0;
   state.responses = {};
   renderPointContent();
