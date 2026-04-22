@@ -78,6 +78,20 @@ function typeLabel(type) {
   return map[type] || "题目";
 }
 
+function formatCorrectAnswer(result) {
+  if (!result || result.correctAnswer == null) {
+    return "";
+  }
+
+  if (result.questionType === "drag_match" && typeof result.correctAnswer === "object") {
+    return Object.entries(result.correctAnswer)
+      .map(([left, right]) => `${left} -> ${right}`)
+      .join("；");
+  }
+
+  return String(result.correctAnswer);
+}
+
 function getSelectedCourse() {
   return state.courses.find((course) => course.id === state.selectedCourseId) || null;
 }
@@ -307,7 +321,10 @@ async function submitCurrentAnswer() {
   const response = state.responses[question.id];
   const result = await window.Api.submitQuestion(state.activePoint.id, question.id, response);
   if (!result.correct) {
-    quizFeedback.textContent = "答错了，请重试本题直到答对。";
+    const answerText = formatCorrectAnswer(result);
+    quizFeedback.textContent = answerText
+      ? `答错了，请重试本题直到答对。正确答案：${answerText}`
+      : "答错了，请重试本题直到答对。";
     quizFeedback.className = "message status-bad";
     return;
   }

@@ -311,7 +311,13 @@ app.post("/api/path-points/:pointId/questions/:questionId/submit", requireAuth, 
   if (checked.error) {
     return res.status(400).json({ error: checked.error });
   }
-  return res.json({ correct: checked.correct });
+  const correctAnswer =
+    checked.question.type === "drag_match" ? checked.question.correctMap : checked.question.answer;
+  return res.json({
+    correct: checked.correct,
+    questionType: checked.question.type,
+    correctAnswer: checked.correct ? null : correctAnswer,
+  });
 });
 
 app.post("/api/path-points/:pointId/complete", requireAuth, async (req, res) => {
