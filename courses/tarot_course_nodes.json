@@ -1,0 +1,332 @@
+{
+  "project": "塔罗课程体系",
+  "version": "1.0.0",
+  "description": "基于公开塔罗教学路径整理的30个循序渐进课程节点（入门→进阶→高阶）。",
+  "levels": [
+    "beginner",
+    "intermediate",
+    "advanced"
+  ],
+  "course_nodes": [
+    {
+      "id": "TAROT-001",
+      "title": "塔罗是什么：历史与常见流派",
+      "level": "beginner",
+      "difficulty": 1,
+      "prerequisites": [],
+      "learning_goal": "了解塔罗发展脉络、常见牌系与学习边界。"
+    },
+    {
+      "id": "TAROT-002",
+      "title": "占卜伦理与提问规范",
+      "level": "beginner",
+      "difficulty": 1,
+      "prerequisites": [
+        "TAROT-001"
+      ],
+      "learning_goal": "掌握不替代医疗/法律建议、隐私保护与高质量提问方法。"
+    },
+    {
+      "id": "TAROT-003",
+      "title": "牌组结构总览：22张大阿卡纳与56张小阿卡纳",
+      "level": "beginner",
+      "difficulty": 1,
+      "prerequisites": [
+        "TAROT-001"
+      ],
+      "learning_goal": "理解完整牌组构成，建立整体认知框架。"
+    },
+    {
+      "id": "TAROT-004",
+      "title": "元素系统：火水风土与四组小阿卡纳",
+      "level": "beginner",
+      "difficulty": 2,
+      "prerequisites": [
+        "TAROT-003"
+      ],
+      "learning_goal": "理解权杖、圣杯、宝剑、星币与元素对应关系。"
+    },
+    {
+      "id": "TAROT-005",
+      "title": "数字与序列：1-10在塔罗中的递进意义",
+      "level": "beginner",
+      "difficulty": 2,
+      "prerequisites": [
+        "TAROT-004"
+      ],
+      "learning_goal": "掌握数字牌从萌芽到完成的叙事逻辑。"
+    },
+    {
+      "id": "TAROT-006",
+      "title": "宫廷牌入门：侍从、骑士、王后、国王",
+      "level": "beginner",
+      "difficulty": 2,
+      "prerequisites": [
+        "TAROT-004"
+      ],
+      "learning_goal": "理解宫廷牌的人格原型与行为模式。"
+    },
+    {
+      "id": "TAROT-007",
+      "title": "图像符号识读：颜色、姿态、道具",
+      "level": "beginner",
+      "difficulty": 2,
+      "prerequisites": [
+        "TAROT-003"
+      ],
+      "learning_goal": "建立基于画面细节的基础解读能力。"
+    },
+    {
+      "id": "TAROT-008",
+      "title": "正位与逆位：基础差异与常见误区",
+      "level": "beginner",
+      "difficulty": 2,
+      "prerequisites": [
+        "TAROT-005",
+        "TAROT-007"
+      ],
+      "learning_goal": "掌握逆位处理方式，避免“好坏二分法”。"
+    },
+    {
+      "id": "TAROT-009",
+      "title": "单张牌练习：每日一抽与记录模板",
+      "level": "beginner",
+      "difficulty": 2,
+      "prerequisites": [
+        "TAROT-008"
+      ],
+      "learning_goal": "通过高频小练习稳定牌意记忆与直觉。"
+    },
+    {
+      "id": "TAROT-010",
+      "title": "三张牌阵：过去-现在-未来",
+      "level": "beginner",
+      "difficulty": 3,
+      "prerequisites": [
+        "TAROT-009"
+      ],
+      "learning_goal": "完成基础时间线解读并输出连贯结论。"
+    },
+    {
+      "id": "TAROT-011",
+      "title": "问题重构：如何把模糊问题转成可解读问题",
+      "level": "intermediate",
+      "difficulty": 3,
+      "prerequisites": [
+        "TAROT-010"
+      ],
+      "learning_goal": "将“会不会”类问题转化为“如何做”类问题。"
+    },
+    {
+      "id": "TAROT-012",
+      "title": "叙事拼接：多张牌的主线与支线",
+      "level": "intermediate",
+      "difficulty": 3,
+      "prerequisites": [
+        "TAROT-010"
+      ],
+      "learning_goal": "掌握多牌阅读中的因果与主题归纳。"
+    },
+    {
+      "id": "TAROT-013",
+      "title": "牌与牌互动：重复元素、冲突与补充",
+      "level": "intermediate",
+      "difficulty": 3,
+      "prerequisites": [
+        "TAROT-012"
+      ],
+      "learning_goal": "识别同元素叠加、元素冲突和语义补偿。"
+    },
+    {
+      "id": "TAROT-014",
+      "title": "关系主题牌阵（基础）",
+      "level": "intermediate",
+      "difficulty": 3,
+      "prerequisites": [
+        "TAROT-011",
+        "TAROT-012"
+      ],
+      "learning_goal": "在关系议题中分析双方状态与互动模式。"
+    },
+    {
+      "id": "TAROT-015",
+      "title": "学业/事业主题牌阵（基础）",
+      "level": "intermediate",
+      "difficulty": 3,
+      "prerequisites": [
+        "TAROT-011",
+        "TAROT-012"
+      ],
+      "learning_goal": "解读目标、阻碍、资源与行动建议。"
+    },
+    {
+      "id": "TAROT-016",
+      "title": "决策牌阵：方案A/B比较",
+      "level": "intermediate",
+      "difficulty": 4,
+      "prerequisites": [
+        "TAROT-015"
+      ],
+      "learning_goal": "进行路径比较与风险提示，而非绝对预测。"
+    },
+    {
+      "id": "TAROT-017",
+      "title": "凯尔特十字牌阵：结构与读法",
+      "level": "intermediate",
+      "difficulty": 4,
+      "prerequisites": [
+        "TAROT-013",
+        "TAROT-016"
+      ],
+      "learning_goal": "掌握经典十字牌阵的位序逻辑与读取顺序。"
+    },
+    {
+      "id": "TAROT-018",
+      "title": "逆位深读：能量受阻、内化、延迟",
+      "level": "intermediate",
+      "difficulty": 4,
+      "prerequisites": [
+        "TAROT-008",
+        "TAROT-013"
+      ],
+      "learning_goal": "将逆位纳入完整语境，提升解读精细度。"
+    },
+    {
+      "id": "TAROT-019",
+      "title": "大阿卡纳专题：人生阶段与关键转折",
+      "level": "intermediate",
+      "difficulty": 4,
+      "prerequisites": [
+        "TAROT-017"
+      ],
+      "learning_goal": "理解愚者旅程在个人成长叙事中的应用。"
+    },
+    {
+      "id": "TAROT-020",
+      "title": "咨询沟通技巧：反馈、共情与边界",
+      "level": "intermediate",
+      "difficulty": 4,
+      "prerequisites": [
+        "TAROT-014",
+        "TAROT-015"
+      ],
+      "learning_goal": "提升咨询对话质量与用户体验。"
+    },
+    {
+      "id": "TAROT-021",
+      "title": "牌意冲突处理：矛盾信息如何整合",
+      "level": "advanced",
+      "difficulty": 4,
+      "prerequisites": [
+        "TAROT-017",
+        "TAROT-018"
+      ],
+      "learning_goal": "建立“主轴优先+情境验证”的冲突处理方法。"
+    },
+    {
+      "id": "TAROT-022",
+      "title": "阴影工作与自我觉察练习",
+      "level": "advanced",
+      "difficulty": 4,
+      "prerequisites": [
+        "TAROT-018",
+        "TAROT-020"
+      ],
+      "learning_goal": "把塔罗用于情绪识别、模式反思与成长计划。"
+    },
+    {
+      "id": "TAROT-023",
+      "title": "元素失衡诊断：火水风土的补偿建议",
+      "level": "advanced",
+      "difficulty": 4,
+      "prerequisites": [
+        "TAROT-017",
+        "TAROT-021"
+      ],
+      "learning_goal": "从元素比例分析行为偏差与行动策略。"
+    },
+    {
+      "id": "TAROT-024",
+      "title": "时间窗口判断：短中长期趋势分层",
+      "level": "advanced",
+      "difficulty": 4,
+      "prerequisites": [
+        "TAROT-016",
+        "TAROT-021"
+      ],
+      "learning_goal": "在不宿命化前提下给出阶段性时间判断。"
+    },
+    {
+      "id": "TAROT-025",
+      "title": "主题整合实战：关系+事业复合问题",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "TAROT-020",
+        "TAROT-021"
+      ],
+      "learning_goal": "处理多目标冲突场景并形成可执行建议。"
+    },
+    {
+      "id": "TAROT-026",
+      "title": "跨体系映射：塔罗与占星基础对应",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "TAROT-019",
+        "TAROT-023"
+      ],
+      "learning_goal": "建立基础跨体系联动思维，提升解释深度。"
+    },
+    {
+      "id": "TAROT-027",
+      "title": "咨询流程设计：开场-解读-建议-复盘",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "TAROT-020",
+        "TAROT-025"
+      ],
+      "learning_goal": "形成可重复的专业咨询流程模板。"
+    },
+    {
+      "id": "TAROT-028",
+      "title": "高难个案拆解：高压情境与情绪波动",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "TAROT-022",
+        "TAROT-025"
+      ],
+      "learning_goal": "在复杂情绪场景下保持稳定、清晰与边界。"
+    },
+    {
+      "id": "TAROT-029",
+      "title": "专业伦理进阶：高风险议题的拒绝与转介",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "TAROT-020",
+        "TAROT-028"
+      ],
+      "learning_goal": "识别不可解读场景并进行专业转介。"
+    },
+    {
+      "id": "TAROT-030",
+      "title": "毕业整合：完整咨询模拟与评估",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "TAROT-027",
+        "TAROT-028",
+        "TAROT-029"
+      ],
+      "learning_goal": "独立完成端到端咨询并进行质量复盘。"
+    }
+  ],
+  "reference_topics": [
+    "Learning the Tarot 课程结构（基础至进阶）",
+    "公开塔罗课程大纲（伦理、牌阵、实战、咨询流程）",
+    "Tarot curriculum 常见模块（Major/Minor、spreads、reversals、ethics）"
+  ]
+}
