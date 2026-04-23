@@ -1,7 +1,7 @@
 {
   "project": "塔罗课程体系",
   "version": "1.0.0",
-  "description": "基于公开塔罗教学路径整理的30个循序渐进课程节点（入门→进阶→高阶）。",
+  "description": "基于公开塔罗教学路径整理的50个循序渐进课程节点（入门→进阶→高阶）。",
   "levels": [
     "beginner",
     "intermediate",
@@ -322,6 +322,219 @@
         "TAROT-029"
       ],
       "learning_goal": "独立完成端到端咨询并进行质量复盘。"
+    },
+    {
+      "id": "TAROT-031",
+      "title": "塔罗日记系统：标签化复盘方法",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "TAROT-030"
+      ],
+      "learning_goal": "通过统一标签体系沉淀个人牌义数据库。"
+    },
+    {
+      "id": "TAROT-032",
+      "title": "抽牌偏差识别：确认偏误与投射",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "TAROT-031"
+      ],
+      "learning_goal": "识别并降低主观偏差对解读质量的影响。"
+    },
+    {
+      "id": "TAROT-033",
+      "title": "语义分层：事实、解释、建议",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "TAROT-031"
+      ],
+      "learning_goal": "将解读输出拆分为可验证层级，提升清晰度。"
+    },
+    {
+      "id": "TAROT-034",
+      "title": "复合时序牌阵：三阶段策略规划",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "TAROT-024",
+        "TAROT-033"
+      ],
+      "learning_goal": "把短中长期信息转换为阶段化行动方案。"
+    },
+    {
+      "id": "TAROT-035",
+      "title": "工作坊设计：团体教学结构与节奏",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "TAROT-027"
+      ],
+      "learning_goal": "掌握初中级塔罗工作坊的课程编排。"
+    },
+    {
+      "id": "TAROT-036",
+      "title": "跨文化图像比较：莱德与托特体系",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "TAROT-019",
+        "TAROT-032"
+      ],
+      "learning_goal": "比较不同牌系符号语义，提升迁移能力。"
+    },
+    {
+      "id": "TAROT-037",
+      "title": "高冲突咨询场景中的沟通降温",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "TAROT-020",
+        "TAROT-029"
+      ],
+      "learning_goal": "在情绪高压对话中保持边界与专业表达。"
+    },
+    {
+      "id": "TAROT-038",
+      "title": "误读纠偏：如何重构失败解读",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "TAROT-032",
+        "TAROT-033"
+      ],
+      "learning_goal": "建立误读复盘流程，快速恢复解读质量。"
+    },
+    {
+      "id": "TAROT-039",
+      "title": "主题牌阵库构建：关系、事业、成长",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "TAROT-035"
+      ],
+      "learning_goal": "形成可复用的主题牌阵模板库。"
+    },
+    {
+      "id": "TAROT-040",
+      "title": "用户画像与提问引导策略",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "TAROT-037"
+      ],
+      "learning_goal": "根据提问者状态调整语言与建议颗粒度。"
+    },
+    {
+      "id": "TAROT-041",
+      "title": "案例督导：高复杂度咨询复盘",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "TAROT-038",
+        "TAROT-040"
+      ],
+      "learning_goal": "通过案例督导迭代咨询思路与方法。"
+    },
+    {
+      "id": "TAROT-042",
+      "title": "专业报告写作：结构化输出模板",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "TAROT-033",
+        "TAROT-041"
+      ],
+      "learning_goal": "把口头解读转化为结构清晰的书面报告。"
+    },
+    {
+      "id": "TAROT-043",
+      "title": "塔罗与叙事疗法的边界应用",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "TAROT-022",
+        "TAROT-041"
+      ],
+      "learning_goal": "以安全边界使用叙事式提问促进自我觉察。"
+    },
+    {
+      "id": "TAROT-044",
+      "title": "牌阵创新：从需求反推位置设计",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "TAROT-039"
+      ],
+      "learning_goal": "掌握自定义牌阵的设计原则与验证步骤。"
+    },
+    {
+      "id": "TAROT-045",
+      "title": "连续咨询项目管理：跟踪与回访",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "TAROT-040",
+        "TAROT-042"
+      ],
+      "learning_goal": "建立多次咨询跟踪机制并评估建议有效性。"
+    },
+    {
+      "id": "TAROT-046",
+      "title": "不确定性表达：概率与情境假设",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "TAROT-024",
+        "TAROT-042"
+      ],
+      "learning_goal": "在解读中准确表达不确定性而非绝对结论。"
+    },
+    {
+      "id": "TAROT-047",
+      "title": "伦理高阶：平台化服务风险管控",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "TAROT-029",
+        "TAROT-045"
+      ],
+      "learning_goal": "识别线上服务中的风险场景并建立处理流程。"
+    },
+    {
+      "id": "TAROT-048",
+      "title": "教学与咨询双角色切换训练",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "TAROT-035",
+        "TAROT-045"
+      ],
+      "learning_goal": "在教学者与咨询者角色间稳定切换。"
+    },
+    {
+      "id": "TAROT-049",
+      "title": "终局实战：完整案例闭环演练",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "TAROT-046",
+        "TAROT-047",
+        "TAROT-048"
+      ],
+      "learning_goal": "完成从提问到回访的全流程高标准演练。"
+    },
+    {
+      "id": "TAROT-050",
+      "title": "毕业评鉴：方法论总结与个人风格建立",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "TAROT-049"
+      ],
+      "learning_goal": "沉淀个人方法论并形成稳定的咨询风格。"
     }
   ],
   "reference_topics": [
