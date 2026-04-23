@@ -5,6 +5,7 @@ const bcrypt = require("bcryptjs");
 const { gradeLesson, gradeQuestion } = require("./grading");
 
 const DB_PATH = path.join(__dirname, "..", "data", "db.json");
+const COURSE_FILES_DIR = path.join(__dirname, "..", "courses");
 const NODE_COUNT_PER_SKILL = 4;
 
 function makeId(size = 10) {
@@ -223,21 +224,174 @@ function deriveSkillId(rawValue, skills) {
   return null;
 }
 
+function deriveSkillIdFromText(rawValue, skills) {
+  const value = String(rawValue || "")
+    .trim()
+    .toLowerCase();
+  if (!value) {
+    return null;
+  }
+  const normalized = value.replace(/[^a-z0-9]+/g, "");
+  if (!normalized) {
+    return null;
+  }
+  const aliases = {
+    tarot: "tarot",
+    zodiac: "zodiac",
+    horoscope: "zodiac",
+    yijing: "yijing",
+    iching: "yijing",
+    shaman: "shaman",
+    shamanism: "shaman",
+  };
+  const direct = aliases[normalized];
+  if (direct && skills.some((skill) => skill.id === direct)) {
+    return direct;
+  }
+  const containsAlias = Object.entries(aliases).find(([alias]) => normalized.includes(alias));
+  if (containsAlias && skills.some((skill) => skill.id === containsAlias[1])) {
+    return containsAlias[1];
+  }
+  return null;
+}
+
+function deriveExternalNodeOrder(node, fallbackOrder) {
+  const fromOrder = Number(node.order || node.nodeOrder || node.sequence);
+  if (Number.isFinite(fromOrder) && fromOrder > 0) {
+    return fromOrder;
+  }
+  const idText = String(node.id || "");
+  const matched = idText.match(/(\d+)$/);
+  if (matched) {
+    const parsed = Number(matched[1]);
+    if (Number.isFinite(parsed) && parsed > 0) {
+      return parsed;
+    }
+  }
+  return fallbackOrder;
+}
+
+async function loadExternalCoursePoints(skills) {
+  let files = [];
+  try {
+    files = await fs.readdir(COURSE_FILES_DIR);
+  } catch (error) {
+    if (error.code === "ENOENT") {
+      return [];
+    }
+    throw error;
+  }
+
+  const jsonFiles = files.filter((name) => name.toLowerCase().endsWith(".json"));
+  const importedPoints = [];
+
+  for (const fileName of jsonFiles) {
+    const filePath = path.join(COURSE_FILES_DIR, fileName);
+    let parsed;
+    try {
+      const raw = await fs.readFile(filePath, "utf8");
+      parsed = JSON.parse(raw);
+    } catch (_error) {
+      continue;
+    }
+
+    const nodes = Array.isArray(parsed.course_nodes)
+      ? parsed.course_nodes
+      : Array.isArray(parsed.nodes)
+        ? parsed.nodes
+        : [];
+    if (nodes.length === 0) {
+      continue;
+    }
+
+    const fileHint = fileName.replace(/\.json$/i, "");
+    const defaultCourseId = deriveSkillIdFromText(fileHint, skills);
+
+    nodes.forEach((node, index) => {
+      if (!node || typeof node !== "object") {
+        return;
+      }
+      const sourceNodeId = String(node.id || "").trim() || `${fileHint}-${index + 1}`;
+      const courseId =
+        deriveSkillId(node.courseId || node.skillId, skills) ||
+        deriveSkillIdFromText(sourceNodeId, skills) ||
+        defaultCourseId;
+      if (!courseId) {
+        return;
+      }
+      const skill = skills.find((item) => item.id === courseId);
+      if (!skill) {
+        return;
+      }
+      const order = deriveExternalNodeOrder(node, index + 1);
+      const title = String(node.title || "").trim() || `${skill.name} 节点 ${order}`;
+      const learningGoal = String(node.learning_goal || node.description || "").trim();
+      const chapterText = [
+        `${skill.name}路径节点 ${order}：${title}`,
+        learningGoal ? `学习目标：${learningGoal}` : "学习目标：建立核心概念并完成实战练习。",
+        "学习建议：先阅读文本，再完成 8 道题，错题会延后到本组末尾继续练习。",
+        "本应用用于兴趣学习与自我观察，不替代专业建议。",
+      ];
+      importedPoints.push({
+        id: makeId(10),
+        sourceNodeId,
+        courseId,
+        skillId: courseId,
+        title,
+        order,
+        estimatedMinutes: 8,
+        readingMinutes: 4,
+        chapterText,
+        imageDataUrl: null,
+        questions: buildNodeQuestions(skill.name, order),
+        color: skill.color,
+      });
+    });
+  }
+
+  return importedPoints;
+}
+
+function mergeExternalPoints(points, externalPoints) {
+  if (!Array.isArray(externalPoints) || externalPoints.length === 0) {
+    return points;
+  }
+  const merged = [...points];
+
+  externalPoints.forEach((externalPoint) => {
+    const bySourceIndex = merged.findIndex(
+      (item) =>
+        item.courseId === externalPoint.courseId &&
+        item.sourceNodeId &&
+        item.sourceNodeId === externalPoint.sourceNodeId,
+    );
+    if (bySourceIndex >= 0) {
+      const existing = merged[bySourceIndex];
+      merged[bySourceIndex] = {
+        ...existing,
+        ...externalPoint,
+        id: existing.id,
+        imageDataUrl: existing.imageDataUrl || externalPoint.imageDataUrl,
+      };
+      return;
+    }
+
+    merged.push(externalPoint);
+  });
+
+  return merged;
+}
+
 async function createSeedData() {
   const adminHash = await bcrypt.hash("admin123", 10);
   const learnerHash = await bcrypt.hash("demo123", 10);
   const skills = defaultSkills();
   const courses = createCourses(skills);
-  const points = reorderPoints(
-    ensureSkillPoints(
-      skills.flatMap((skill) =>
-        Array.from({ length: NODE_COUNT_PER_SKILL }, (_unused, index) =>
-          buildSeedPoint(skill, index + 1),
-        ),
-      ),
-      skills,
-    ),
+  const seedPoints = skills.flatMap((skill) =>
+    Array.from({ length: NODE_COUNT_PER_SKILL }, (_unused, index) => buildSeedPoint(skill, index + 1)),
   );
+  const externalPoints = await loadExternalCoursePoints(skills);
+  const points = reorderPoints(ensureSkillPoints(mergeExternalPoints(seedPoints, externalPoints), skills));
   const firstCourseId = courses[0]?.id ?? null;
   const firstPointId = points.find((point) => point.courseId === firstCourseId)?.id ?? null;
 
@@ -328,6 +482,7 @@ class DataStore {
               : [];
         return {
           id: point.id || makeId(10),
+          sourceNodeId: normalizeMaybeString(point.sourceNodeId || point.externalNodeId),
           courseId: skillId,
           skillId,
           title: point.title || `${skill.name} 节点 ${order}`,
@@ -342,7 +497,10 @@ class DataStore {
       })
       .filter(Boolean);
 
-    const points = reorderPoints(ensureSkillPoints(normalizedPoints, normalizedSkills));
+    const externalPoints = await loadExternalCoursePoints(normalizedSkills);
+    const points = reorderPoints(
+      ensureSkillPoints(mergeExternalPoints(normalizedPoints, externalPoints), normalizedSkills),
+    );
 
     const validPointIds = new Set(points.map((point) => point.id));
     const users = (Array.isArray(this.db.users) ? this.db.users : []).map((user) => {

@@ -1,0 +1,517 @@
+{
+  "project": "周易课程体系",
+  "version": "1.0.0",
+  "description": "基于公开周易学习路径整理的50个循序渐进课程节点（入门→进阶→高阶）。",
+  "levels": [
+    "beginner",
+    "intermediate",
+    "advanced"
+  ],
+  "course_nodes": [
+    {
+      "id": "YIJING-001",
+      "title": "周易是什么：经传结构与常见误解",
+      "level": "beginner",
+      "difficulty": 1,
+      "prerequisites": [],
+      "learning_goal": "了解《易经》经文与十翼的基本结构，建立学习边界。"
+    },
+    {
+      "id": "YIJING-002",
+      "title": "阴阳概念入门：对立、互根与流变",
+      "level": "beginner",
+      "difficulty": 1,
+      "prerequisites": [
+        "YIJING-001"
+      ],
+      "learning_goal": "理解阴阳并非绝对二元，而是动态平衡关系。"
+    },
+    {
+      "id": "YIJING-003",
+      "title": "三才与位：天人地框架",
+      "level": "beginner",
+      "difficulty": 1,
+      "prerequisites": [
+        "YIJING-002"
+      ],
+      "learning_goal": "理解三才视角在易学判断中的作用。"
+    },
+    {
+      "id": "YIJING-004",
+      "title": "八卦总览：乾坤震巽坎离艮兑",
+      "level": "beginner",
+      "difficulty": 1,
+      "prerequisites": [
+        "YIJING-002"
+      ],
+      "learning_goal": "掌握八卦符号、卦名与基础意象。"
+    },
+    {
+      "id": "YIJING-005",
+      "title": "先天与后天八卦的不同用途",
+      "level": "beginner",
+      "difficulty": 2,
+      "prerequisites": [
+        "YIJING-004"
+      ],
+      "learning_goal": "区分先天卦序与后天卦位在学习中的用途。"
+    },
+    {
+      "id": "YIJING-006",
+      "title": "六爻结构：初上、阴阳、当位与失位",
+      "level": "beginner",
+      "difficulty": 2,
+      "prerequisites": [
+        "YIJING-004"
+      ],
+      "learning_goal": "理解爻位层级及其在解读中的含义。"
+    },
+    {
+      "id": "YIJING-007",
+      "title": "卦、爻、象、辞：四层阅读框架",
+      "level": "beginner",
+      "difficulty": 2,
+      "prerequisites": [
+        "YIJING-006"
+      ],
+      "learning_goal": "建立从卦象到卦辞、爻辞的基础阅读路径。"
+    },
+    {
+      "id": "YIJING-008",
+      "title": "起卦方法一：三枚铜钱法",
+      "level": "beginner",
+      "difficulty": 2,
+      "prerequisites": [
+        "YIJING-006"
+      ],
+      "learning_goal": "掌握铜钱起卦步骤与阴阳老少判定。"
+    },
+    {
+      "id": "YIJING-009",
+      "title": "起卦方法二：数字起卦法",
+      "level": "beginner",
+      "difficulty": 2,
+      "prerequisites": [
+        "YIJING-008"
+      ],
+      "learning_goal": "学习简化起卦方式并控制随机偏差。"
+    },
+    {
+      "id": "YIJING-010",
+      "title": "提问规范：如何提出可解读问题",
+      "level": "beginner",
+      "difficulty": 2,
+      "prerequisites": [
+        "YIJING-008"
+      ],
+      "learning_goal": "将模糊问题转为时间、场景、行为明确的问题。"
+    },
+    {
+      "id": "YIJING-011",
+      "title": "本卦、变卦、互卦：关系与优先级",
+      "level": "intermediate",
+      "difficulty": 3,
+      "prerequisites": [
+        "YIJING-010"
+      ],
+      "learning_goal": "理解多卦关系并确定解读先后。"
+    },
+    {
+      "id": "YIJING-012",
+      "title": "动爻识别：老阴老阳的意义",
+      "level": "intermediate",
+      "difficulty": 3,
+      "prerequisites": [
+        "YIJING-011"
+      ],
+      "learning_goal": "掌握动爻与变爻触发的判断条件。"
+    },
+    {
+      "id": "YIJING-013",
+      "title": "无动爻情形的判断方法",
+      "level": "intermediate",
+      "difficulty": 3,
+      "prerequisites": [
+        "YIJING-012"
+      ],
+      "learning_goal": "学会在无动爻时聚焦卦辞与象意。"
+    },
+    {
+      "id": "YIJING-014",
+      "title": "一爻动与多爻动的读法差异",
+      "level": "intermediate",
+      "difficulty": 3,
+      "prerequisites": [
+        "YIJING-012"
+      ],
+      "learning_goal": "掌握一动、多动、全动情况下的处理规则。"
+    },
+    {
+      "id": "YIJING-015",
+      "title": "卦序学习法：从乾坤到既未济",
+      "level": "intermediate",
+      "difficulty": 3,
+      "prerequisites": [
+        "YIJING-011"
+      ],
+      "learning_goal": "理解64卦卦序背后的发展逻辑。"
+    },
+    {
+      "id": "YIJING-016",
+      "title": "六十四卦主题群组：启始类卦",
+      "level": "intermediate",
+      "difficulty": 3,
+      "prerequisites": [
+        "YIJING-015"
+      ],
+      "learning_goal": "识别启动、开端类情境的常见卦象。"
+    },
+    {
+      "id": "YIJING-017",
+      "title": "六十四卦主题群组：阻滞类卦",
+      "level": "intermediate",
+      "difficulty": 3,
+      "prerequisites": [
+        "YIJING-016"
+      ],
+      "learning_goal": "掌握阻滞、冲突、困境场景下的卦象特征。"
+    },
+    {
+      "id": "YIJING-018",
+      "title": "六十四卦主题群组：通达类卦",
+      "level": "intermediate",
+      "difficulty": 3,
+      "prerequisites": [
+        "YIJING-017"
+      ],
+      "learning_goal": "掌握顺势、协同与推进场景下的卦象特征。"
+    },
+    {
+      "id": "YIJING-019",
+      "title": "卦辞关键词提炼练习",
+      "level": "intermediate",
+      "difficulty": 3,
+      "prerequisites": [
+        "YIJING-011"
+      ],
+      "learning_goal": "把复杂文句提炼为可执行关键词。"
+    },
+    {
+      "id": "YIJING-020",
+      "title": "爻辞关键词提炼练习",
+      "level": "intermediate",
+      "difficulty": 3,
+      "prerequisites": [
+        "YIJING-012"
+      ],
+      "learning_goal": "提高逐爻拆解与层次判断能力。"
+    },
+    {
+      "id": "YIJING-021",
+      "title": "象传解读入门：取象与类比",
+      "level": "intermediate",
+      "difficulty": 4,
+      "prerequisites": [
+        "YIJING-019"
+      ],
+      "learning_goal": "学习从象传中提取行动导向。"
+    },
+    {
+      "id": "YIJING-022",
+      "title": "彖传解读入门：义理与局势",
+      "level": "intermediate",
+      "difficulty": 4,
+      "prerequisites": [
+        "YIJING-019"
+      ],
+      "learning_goal": "掌握彖传对卦义的整体阐释方式。"
+    },
+    {
+      "id": "YIJING-023",
+      "title": "文言与系辞选读：概念锚点",
+      "level": "intermediate",
+      "difficulty": 4,
+      "prerequisites": [
+        "YIJING-022"
+      ],
+      "learning_goal": "建立关键易学术语的原典理解。"
+    },
+    {
+      "id": "YIJING-024",
+      "title": "关系问题解读框架",
+      "level": "intermediate",
+      "difficulty": 4,
+      "prerequisites": [
+        "YIJING-014"
+      ],
+      "learning_goal": "在关系议题中拆分双方、时机与行动。"
+    },
+    {
+      "id": "YIJING-025",
+      "title": "学业与职业问题解读框架",
+      "level": "intermediate",
+      "difficulty": 4,
+      "prerequisites": [
+        "YIJING-014"
+      ],
+      "learning_goal": "分析目标、资源、阻力与阶段策略。"
+    },
+    {
+      "id": "YIJING-026",
+      "title": "决策比较：方案A/B卦例分析",
+      "level": "intermediate",
+      "difficulty": 4,
+      "prerequisites": [
+        "YIJING-025"
+      ],
+      "learning_goal": "通过对比卦象优化决策路径。"
+    },
+    {
+      "id": "YIJING-027",
+      "title": "时间窗判断：近期与中期趋势",
+      "level": "intermediate",
+      "difficulty": 4,
+      "prerequisites": [
+        "YIJING-026"
+      ],
+      "learning_goal": "建立阶段性趋势而非绝对预测的思维。"
+    },
+    {
+      "id": "YIJING-028",
+      "title": "取用神思路（入门视角）",
+      "level": "intermediate",
+      "difficulty": 4,
+      "prerequisites": [
+        "YIJING-020"
+      ],
+      "learning_goal": "理解取用原则与问题焦点匹配。"
+    },
+    {
+      "id": "YIJING-029",
+      "title": "常见偏误：过度解释与宿命化",
+      "level": "intermediate",
+      "difficulty": 4,
+      "prerequisites": [
+        "YIJING-023"
+      ],
+      "learning_goal": "识别并避免易学解读中的认知偏误。"
+    },
+    {
+      "id": "YIJING-030",
+      "title": "咨询伦理：边界、隐私与转介",
+      "level": "intermediate",
+      "difficulty": 4,
+      "prerequisites": [
+        "YIJING-024",
+        "YIJING-025"
+      ],
+      "learning_goal": "建立安全、负责任的咨询沟通边界。"
+    },
+    {
+      "id": "YIJING-031",
+      "title": "乾坤双卦深读：创始与承载",
+      "level": "advanced",
+      "difficulty": 4,
+      "prerequisites": [
+        "YIJING-023"
+      ],
+      "learning_goal": "从乾坤两极理解结构性变化。"
+    },
+    {
+      "id": "YIJING-032",
+      "title": "屯蒙需讼：起步阶段的决策模型",
+      "level": "advanced",
+      "difficulty": 4,
+      "prerequisites": [
+        "YIJING-031"
+      ],
+      "learning_goal": "将经典卦对映射到项目起步问题。"
+    },
+    {
+      "id": "YIJING-033",
+      "title": "师比小畜履：组织与协作卦群",
+      "level": "advanced",
+      "difficulty": 4,
+      "prerequisites": [
+        "YIJING-032"
+      ],
+      "learning_goal": "掌握团队、秩序、协作场景下的卦象。"
+    },
+    {
+      "id": "YIJING-034",
+      "title": "泰否同人：通塞转换机制",
+      "level": "advanced",
+      "difficulty": 4,
+      "prerequisites": [
+        "YIJING-033"
+      ],
+      "learning_goal": "理解局势由通到塞、由塞到通的转折信号。"
+    },
+    {
+      "id": "YIJING-035",
+      "title": "大有谦豫随：资源与节奏管理",
+      "level": "advanced",
+      "difficulty": 4,
+      "prerequisites": [
+        "YIJING-034"
+      ],
+      "learning_goal": "在资源扩张与收敛间保持平衡。"
+    },
+    {
+      "id": "YIJING-036",
+      "title": "蛊临观噬嗑：修复与治理卦群",
+      "level": "advanced",
+      "difficulty": 4,
+      "prerequisites": [
+        "YIJING-035"
+      ],
+      "learning_goal": "学习问题修复、制度修订与执行落地。"
+    },
+    {
+      "id": "YIJING-037",
+      "title": "贲剥复无妄：表里与复原路径",
+      "level": "advanced",
+      "difficulty": 4,
+      "prerequisites": [
+        "YIJING-036"
+      ],
+      "learning_goal": "掌握由表及里、由衰至复的解读方法。"
+    },
+    {
+      "id": "YIJING-038",
+      "title": "大畜颐大过：承压与转化",
+      "level": "advanced",
+      "difficulty": 4,
+      "prerequisites": [
+        "YIJING-037"
+      ],
+      "learning_goal": "识别承压阶段的风险与转化节点。"
+    },
+    {
+      "id": "YIJING-039",
+      "title": "坎离咸恒：内外平衡策略",
+      "level": "advanced",
+      "difficulty": 4,
+      "prerequisites": [
+        "YIJING-038"
+      ],
+      "learning_goal": "从坎离互补理解稳定与变动。"
+    },
+    {
+      "id": "YIJING-040",
+      "title": "遁大壮晋明夷：进退节奏",
+      "level": "advanced",
+      "difficulty": 4,
+      "prerequisites": [
+        "YIJING-039"
+      ],
+      "learning_goal": "根据形势动态调整推进与收缩策略。"
+    },
+    {
+      "id": "YIJING-041",
+      "title": "家人睽蹇解：关系冲突化解",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "YIJING-040"
+      ],
+      "learning_goal": "处理关系系统中的误解、僵局与解法。"
+    },
+    {
+      "id": "YIJING-042",
+      "title": "损益夬姤：增减与边界",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "YIJING-041"
+      ],
+      "learning_goal": "掌握增减策略及边界设定。"
+    },
+    {
+      "id": "YIJING-043",
+      "title": "萃升困井：组织成长与瓶颈",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "YIJING-042"
+      ],
+      "learning_goal": "识别团队成长路径中的瓶颈与突破点。"
+    },
+    {
+      "id": "YIJING-044",
+      "title": "革鼎震艮：变革与定盘",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "YIJING-043"
+      ],
+      "learning_goal": "掌握重大变革后的重建与稳定。"
+    },
+    {
+      "id": "YIJING-045",
+      "title": "渐归妹丰旅：阶段过渡管理",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "YIJING-044"
+      ],
+      "learning_goal": "应对角色转换与阶段过渡的不确定性。"
+    },
+    {
+      "id": "YIJING-046",
+      "title": "巽兑涣节：沟通与约束平衡",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "YIJING-045"
+      ],
+      "learning_goal": "协调沟通灵活性与规则约束。"
+    },
+    {
+      "id": "YIJING-047",
+      "title": "中孚小过：信任与修正",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "YIJING-046"
+      ],
+      "learning_goal": "在高敏感情境中建立信任并微调策略。"
+    },
+    {
+      "id": "YIJING-048",
+      "title": "既济未济：完成与再出发",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "YIJING-047"
+      ],
+      "learning_goal": "理解“完成即新起点”的循环视角。"
+    },
+    {
+      "id": "YIJING-049",
+      "title": "综合案例：多问题并发解读",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "YIJING-048",
+        "YIJING-030"
+      ],
+      "learning_goal": "在复杂案例中整合卦象与行动建议。"
+    },
+    {
+      "id": "YIJING-050",
+      "title": "毕业整合：完整咨询演练与复盘",
+      "level": "advanced",
+      "difficulty": 5,
+      "prerequisites": [
+        "YIJING-049"
+      ],
+      "learning_goal": "独立完成端到端周易咨询并进行质量复盘。"
+    }
+  ],
+  "reference_topics": [
+    "I Ching 基础学习路径（阴阳、八卦、六十四卦）",
+    "公开周易课程大纲（起卦、动爻、解读、伦理）",
+    "Book of Changes 常见模块（hexagrams、trigrams、judgment/image）"
+  ]
+}
