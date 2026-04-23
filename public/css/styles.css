@@ -544,8 +544,19 @@ label {
 .course-list-header {
   padding: 8px 10px;
   border-bottom: 1px solid var(--line-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   font-weight: 700;
   color: var(--gold);
+}
+
+.course-list-header .add-node-btn {
+  min-width: 64px;
+  padding: 6px 10px;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .course-list-body {

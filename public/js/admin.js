@@ -329,7 +329,12 @@ imageInput.addEventListener("change", async () => {
 });
 
 adminCourseList.addEventListener("click", (event) => {
-  const addBtn = event.target.closest(".add-node-btn");
+  const target = event.target instanceof Element ? event.target : null;
+  if (!target) {
+    return;
+  }
+
+  const addBtn = target.closest(".add-node-btn");
   if (addBtn) {
     const courseId = addBtn.dataset.courseId || state.courses[0]?.id || "";
     const order = Number(addBtn.dataset.nextOrder || 1);
@@ -338,7 +343,7 @@ adminCourseList.addEventListener("click", (event) => {
     return;
   }
 
-  const editBtn = event.target.closest(".edit-btn");
+  const editBtn = target.closest(".edit-btn");
   if (editBtn) {
     const point = state.pathPoints.find((item) => item.id === editBtn.dataset.id);
     if (point) {
@@ -346,7 +351,7 @@ adminCourseList.addEventListener("click", (event) => {
     }
     return;
   }
-  const deleteBtn = event.target.closest(".delete-btn");
+  const deleteBtn = target.closest(".delete-btn");
   if (deleteBtn) {
     handleDeletePoint(deleteBtn.dataset.id);
   }
