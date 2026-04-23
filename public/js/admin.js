@@ -117,7 +117,7 @@ function updateImagePreview() {
   imagePreview.src = state.imageDataUrl;
 }
 
-function setEditorPoint(point = null) {
+function setEditorPoint(point = null, prefill = {}) {
   const pointIdInput = pathEditorForm.querySelector('input[name="pathId"]');
   const courseSelect = pathEditorForm.querySelector('select[name="courseId"]');
   const orderInput = pathEditorForm.querySelector('input[name="order"]');
@@ -128,8 +128,8 @@ function setEditorPoint(point = null) {
   state.editingPointId = point ? point.id : null;
   pointIdInput.value = point ? point.id : "";
   editorTitle.textContent = point ? "编辑路径点" : "新增路径点";
-  courseSelect.value = point ? point.courseId : state.courses[0]?.id || "";
-  orderInput.value = String(point ? point.order : 1);
+  courseSelect.value = point ? point.courseId : prefill.courseId || state.courses[0]?.id || "";
+  orderInput.value = String(point ? point.order : prefill.order || 1);
   titleInput.value = point ? point.title : "";
   readingInput.value = point ? point.learningText.join("\n") : "";
   questionsInput.value = point
@@ -173,8 +173,12 @@ function renderCourseList() {
             )
             .join("");
 
+    const nextOrder = points.length > 0 ? Math.max(...points.map((item) => item.order)) + 1 : 1;
     wrapper.innerHTML = `
-      <div class="course-list-header">${course.name}</div>
+      <div class="course-list-header">
+        <span>${course.name}</span>
+        <button type="button" class="secondary-btn tiny add-node-btn" data-course-id="${course.id}" data-next-order="${nextOrder}">增加</button>
+      </div>
       <div class="course-list-body">${pointHtml}</div>
     `;
     adminCourseList.appendChild(wrapper);
@@ -325,6 +329,15 @@ imageInput.addEventListener("change", async () => {
 });
 
 adminCourseList.addEventListener("click", (event) => {
+  const addBtn = event.target.closest(".add-node-btn");
+  if (addBtn) {
+    const courseId = addBtn.dataset.courseId || state.courses[0]?.id || "";
+    const order = Number(addBtn.dataset.nextOrder || 1);
+    setEditorPoint(null, { courseId, order });
+    editorTitle.scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
+
   const editBtn = event.target.closest(".edit-btn");
   if (editBtn) {
     const point = state.pathPoints.find((item) => item.id === editBtn.dataset.id);
