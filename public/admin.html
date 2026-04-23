@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <title>DuopOccultus 管理后台</title>
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body class="admin-page">
+    <main class="admin-container">
+      <section class="screen admin-login-screen active" data-screen="login">
+        <header>
+          <h1>管理后台</h1>
+          <p class="muted">请用管理员账号登录：admin / admin123</p>
+        </header>
+        <form id="admin-login-form" class="card admin-login-card">
+          <label>
+            用户名
+            <input type="text" name="username" value="admin" required />
+          </label>
+          <label>
+            密码
+            <input type="password" name="password" value="admin123" required />
+          </label>
+          <button type="submit" class="primary-btn block-btn">登录后台</button>
+          <p id="admin-login-error" class="error-text"></p>
+        </form>
+      </section>
+
+      <section class="screen admin-dashboard-screen" data-screen="dashboard">
+        <header class="top-bar admin-top-bar">
+          <div>
+            <h2>路径点管理</h2>
+            <p class="muted">新增/编辑/删除课程路径点（文本 3~5 分钟 + 8 题）</p>
+          </div>
+          <button id="admin-logout-btn" class="ghost-btn">退出</button>
+        </header>
+        <section class="admin-main-grid">
+          <section class="card admin-list-card">
+            <h3>课程与路径点</h3>
+            <ul id="admin-course-list" class="list"></ul>
+          </section>
+          <section class="card admin-editor-card">
+            <h3 id="editor-title">新增路径点</h3>
+            <form id="path-editor-form">
+              <input type="hidden" name="pathId" />
+              <div class="admin-form-grid">
+                <label>
+                  课程
+                  <select name="courseId" required></select>
+                </label>
+                <label>
+                  序号（路径顺序）
+                  <input type="number" name="order" min="1" value="1" required />
+                </label>
+                <label class="full-row">
+                  路径标题
+                  <input type="text" name="title" required />
+                </label>
+                <label class="full-row">
+                  学习文本（每行一段，3~5分钟）
+                  <textarea name="readingLines" rows="6" required></textarea>
+                </label>
+                <label class="full-row">
+                  节点图片（可选）
+                  <input id="pointImageInput" type="file" name="pointImage" accept="image/*" />
+                </label>
+                <div class="full-row image-preview-wrap">
+                  <img id="pointImagePreview" class="point-image-preview hidden" alt="节点图片预览" />
+                </div>
+                <label class="full-row">
+                  题目 JSON（必须 8 题）
+                  <textarea name="questionsJson" rows="12" required></textarea>
+                </label>
+              </div>
+              <div class="action-row">
+                <button type="submit" class="primary-btn">保存路径点</button>
+                <button id="reset-editor-btn" type="button" class="secondary-btn">清空</button>
+              </div>
+              <p id="editor-error" class="error-text"></p>
+              <p id="editor-success" class="success-text"></p>
+            </form>
+          </section>
+        </section>
+      </section>
+    </main>
+    <script src="/js/api.js"></script>
+    <script src="/js/admin.js"></script>
+  </body>
+</html>
