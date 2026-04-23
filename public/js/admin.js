@@ -4,6 +4,7 @@ const state = {
   pathPoints: [],
   editingPointId: null,
   imageDataUrl: "",
+  collapsedCourseIds: new Set(),
 };
 
 const screens = {
@@ -37,6 +38,10 @@ function showLoginError(text) {
 function setEditorMessage({ error = "", success = "" }) {
   editorError.textContent = error;
   editorSuccess.textContent = success;
+}
+
+function isCourseCollapsed(courseId) {
+  return state.collapsedCourseIds.has(courseId);
 }
 
 function defaultQuestionTemplate() {
@@ -148,7 +153,6 @@ function renderCourseList() {
   adminCourseList.innerHTML = "";
   state.courses.forEach((course) => {
     const wrapper = document.createElement("li");
-    wrapper.className = "list-group";
     const points = state.pathPoints
       .filter((point) => point.courseId === course.id)
       .sort((a, b) => a.order - b.order);
@@ -173,13 +177,23 @@ function renderCourseList() {
             )
             .join("");
 
+    const collapsed = isCourseCollapsed(course.id);
+    wrapper.className = `list-group${collapsed ? " collapsed" : ""}`;
     const nextOrder = points.length > 0 ? Math.max(...points.map((item) => item.order)) + 1 : 1;
     wrapper.innerHTML = `
       <div class="course-list-header">
-        <span>${course.name}</span>
+        <button
+          type="button"
+          class="course-title-toggle course-toggle-btn ${collapsed ? "collapsed" : ""}"
+          data-course-id="${course.id}"
+          aria-expanded="${collapsed ? "false" : "true"}"
+        >
+          <span>${course.name}</span>
+          <span class="tiny muted">(${points.length})</span>
+        </button>
         <button type="button" class="secondary-btn tiny add-node-btn" data-course-id="${course.id}" data-next-order="${nextOrder}">增加</button>
       </div>
-      <div class="course-list-body">${pointHtml}</div>
+      <div class="course-list-body ${collapsed ? "is-collapsed" : ""}">${pointHtml}</div>
     `;
     adminCourseList.appendChild(wrapper);
   });
@@ -337,9 +351,25 @@ adminCourseList.addEventListener("click", (event) => {
   const addBtn = target.closest(".add-node-btn");
   if (addBtn) {
     const courseId = addBtn.dataset.courseId || state.courses[0]?.id || "";
+    state.collapsedCourseIds.delete(courseId);
     const order = Number(addBtn.dataset.nextOrder || 1);
     setEditorPoint(null, { courseId, order });
     editorTitle.scrollIntoView({ behavior: "smooth", block: "start" });
+    return;
+  }
+
+  const toggleBtn = target.closest(".course-toggle-btn");
+  if (toggleBtn) {
+    const courseId = toggleBtn.dataset.courseId;
+    if (!courseId) {
+      return;
+    }
+    if (state.collapsedCourseIds.has(courseId)) {
+      state.collapsedCourseIds.delete(courseId);
+    } else {
+      state.collapsedCourseIds.add(courseId);
+    }
+    renderCourseList();
     return;
   }
 

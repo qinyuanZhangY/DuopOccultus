@@ -576,6 +576,36 @@ label {
   color: var(--gold);
 }
 
+.course-toggle-btn {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 0 2px 0 0;
+  font: inherit;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-align: left;
+  flex: 1;
+  text-transform: none;
+}
+
+.course-toggle-icon {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 7px solid var(--gold);
+  transform: translateY(1px);
+  transition: transform 0.15s ease;
+}
+
+.course-toggle-btn.collapsed .course-toggle-icon {
+  transform: rotate(-90deg) translateX(-1px);
+}
+
 .course-list-header .add-node-btn {
   min-width: 64px;
   padding: 6px 10px;
@@ -587,6 +617,10 @@ label {
   display: grid;
   gap: 8px;
   padding: 8px;
+}
+
+.course-list-body.is-collapsed {
+  display: none;
 }
 
 .list-item {
