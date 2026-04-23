@@ -5,6 +5,7 @@ const state = {
   selectedCourseId: null,
   activePoint: null,
   currentQuestionIndex: 0,
+  nextQuestionIndex: null,
   responses: {},
 };
 
@@ -148,7 +149,7 @@ function renderPathTimeline() {
   }
 
   pathCourseTitle.textContent = `${course.name} 路径图`;
-  pathCourseMeta.textContent = "每个路径点：3~5 分钟文本 + 8 题（答错重试）";
+  pathCourseMeta.textContent = "每个路径点：3~5 分钟文本 + 8 题（答错会延后到本组末尾）";
   pathTimeline.innerHTML = "";
   resumeHint.textContent = course.resumePointId
     ? `继续学习位置：${course.resumePointTitle || "当前路径点"}`
@@ -219,7 +220,10 @@ function renderQuestion() {
   quizBody.innerHTML = "";
   quizFeedback.textContent = "";
   quizFeedback.className = "message";
+  submitAnswerBtn.classList.remove("hidden");
+  submitAnswerBtn.disabled = false;
   nextQuestionBtn.classList.add("hidden");
+  state.nextQuestionIndex = null;
 
   const response = state.responses[question.id];
 
@@ -305,6 +309,7 @@ async function openPoint(pointId) {
     readingMinutes: data.pathPoint.readingMinutes ?? data.pathPoint.textDurationMinutes ?? 4,
   };
   state.currentQuestionIndex = 0;
+  state.nextQuestionIndex = null;
   state.responses = {};
   renderPointContent();
   showView("content");
@@ -314,18 +319,27 @@ async function submitCurrentAnswer() {
   const question = state.activePoint.questions[state.currentQuestionIndex];
   const response = state.responses[question.id];
   const result = await window.Api.submitQuestion(state.activePoint.id, question.id, response);
+  submitAnswerBtn.classList.add("hidden");
   if (!result.correct) {
     const answerText = formatCorrectAnswer(result);
     quizFeedback.textContent = answerText
-      ? `答错了，请重试本题直到答对。正确答案：${answerText}`
-      : "答错了，请重试本题直到答对。";
+      ? `答错了，本题已移至本次题组末尾。正确答案：${answerText}`
+      : "答错了，本题已移至本次题组末尾。";
     quizFeedback.className = "message status-bad";
+    const [wrongQuestion] = state.activePoint.questions.splice(state.currentQuestionIndex, 1);
+    state.activePoint.questions.push(wrongQuestion);
+    state.nextQuestionIndex = Math.min(
+      state.currentQuestionIndex,
+      state.activePoint.questions.length - 1,
+    );
+    nextQuestionBtn.classList.remove("hidden");
     return;
   }
 
   quizFeedback.textContent = "回答正确。";
   quizFeedback.className = "message status-ok";
   if (state.currentQuestionIndex < state.activePoint.questions.length - 1) {
+    state.nextQuestionIndex = state.currentQuestionIndex + 1;
     nextQuestionBtn.classList.remove("hidden");
     return;
   }
@@ -397,7 +411,11 @@ submitAnswerBtn.addEventListener("click", async () => {
 });
 
 nextQuestionBtn.addEventListener("click", () => {
-  state.currentQuestionIndex += 1;
+  if (typeof state.nextQuestionIndex === "number") {
+    state.currentQuestionIndex = state.nextQuestionIndex;
+  } else {
+    state.currentQuestionIndex += 1;
+  }
   renderQuestion();
 });
 
