@@ -378,6 +378,10 @@ p {
   font-size: 13px;
 }
 
+.w-full {
+  width: 100%;
+}
+
 .primary-btn,
 .secondary-btn,
 button {
@@ -393,6 +397,13 @@ button {
   justify-content: center;
   align-items: center;
   text-transform: uppercase;
+}
+
+.quiz-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin-top: 10px;
 }
 
 .primary-btn,
